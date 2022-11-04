@@ -1,3 +1,46 @@
+# Milestone 2
+Full details can be found [Milestone 2](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.w0n4yolpgndx)
+
+## Description of Planned Program Analysis
+
+### Overview
+Our project will be a dynamic program analysis to visualize the control flow of a program. We would take in the user's code, run the program, and generate a trace showing things like: which methods were called, which branches were taken in control flow, a way to visualize loops and recursion, and more.
+
+### Target users
+For new hires, or software engineers tasked to learn a new code base in large-scale projects, it can be quite daunting seeing so much code at once. If you’re learning a method, which calls several other methods, and those methods call other methods, this can quickly go out of hand with the number of files and methods you need to look at. This is especially true when the execution of the program depends on control flow such as if statements, recursion, loops, etc.
+
+It’s also a very time-consuming process since software engineers would need to either manually draw call graphs or trace through a debugger, but easily get lost in a deep stack trace
+
+### Which of the 3 guidelines we’re targeting
+Criteria 1: Targets Javascript and its AST
+Criteria 2: A substantial visualization component
+
+### How this compares with other tools
+- Call stacks when debugging is hard to follow, visualize, and don’t necessarily show why a path was taken if there were multiple control flow paths
+- Drawing call graphs by hand is tedious and error-prone
+- Modern tracing tools exist, but this would require users to heavily instrument their code to emit traces.
+
+### Informal Sketch of Planned Analysis
+Please see our google doc for more details
+![image](https://media.github.students.cs.ubc.ca/user/1272/files/5db83cf5-6463-48a4-ae5c-cb518dffcb10)
+![image](https://media.github.students.cs.ubc.ca/user/1272/files/c66cb0fd-da0e-404c-bb02-66cc6bccb8e8)
+
+## Summary of Progress So Far
+- Made a draft schedule of responsibilities and deadlines
+- Created a prototype playing with dynamic analysis
+  - Modify AST and execute the program with modified AST
+  - https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/pull/1/ 
+
+## Planned Follow-up Tasks or Features Still to Design
+- We still need to hash out how we want to visualize if-else conditionals, loops, and recursion.
+- We also need to do more research on what libraries we can use to visualize this.
+
+## Main Responsibilities & Deadlines
+Please see our schedule [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.loop0xb0lgqh) for our planned division of main responsibilities between team members and roadmap for what should be done when including specific goals for completion by future Milestones.
+
+## Notes of any important changes/feedback from TA discussion
+
+
 # Milestone 1
 
 ## Discussion of Ideas So Far

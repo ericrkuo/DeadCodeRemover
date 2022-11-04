@@ -13,6 +13,7 @@ It’s also a very time-consuming process since software engineers would need to
 
 ### Which of the 3 guidelines we’re targeting
 Criteria 1: Targets Javascript and its AST
+
 Criteria 2: A substantial visualization component
 
 ### How this compares with other tools
@@ -26,6 +27,7 @@ Please see our google doc for more details
 ![image](https://media.github.students.cs.ubc.ca/user/1272/files/c66cb0fd-da0e-404c-bb02-66cc6bccb8e8)
 
 ## Summary of Progress So Far
+- We spent a significant amount of time researching past solutions and debating pros/cons of the different projects we wanted to do.
 - Made a draft schedule of responsibilities and deadlines
 - Created a prototype playing with dynamic analysis
   - Modify AST and execute the program with modified AST

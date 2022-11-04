@@ -58,6 +58,7 @@ ancestor(ast, {
      * Gets called whenever acorn sees a node with type "VariableDeclaration"
      */
     VariableDeclaration(node: any, ancestors: any){
+        // get the parent and insert node
         ancestors[0].body.push(nodeToInsert)
     }
 })

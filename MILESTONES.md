@@ -1,6 +1,11 @@
 # Milestone 2
 Full details can be found [Milestone 2](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.w0n4yolpgndx)
 
+## NOTE
+Jifeng gave us feedback and said our idea doesn't fulfill the requirements for Project 2 since we're not modelling or inferring anything from a single trace of the control flow of the program. He suggseted we can collect a bunch of traces for varing inputs, and then model something based on that. Our group will spend the next one to two days discussing amongst ourselves how we can improve our idea, or we may change our idea.
+
+The remaining portion of this markdown is the details we had for our original project. We will update this once we decide on a new idea and confirm with Jifeng!
+
 ## Description of Planned Program Analysis
 
 ### Overview

@@ -17,9 +17,11 @@
   ```
 </details>
 
+> Note: is flow sensitive because depends on the return types of earlier statements
+
 ## 2. Function missing return type
 ```python
-1 def foo(x: int) -> int:
+1 def foo(x):
 2    if x > 0:
 3        return x - 1
 ```
@@ -28,15 +30,19 @@
   <summary>Output (click me)</summary>
   
   ```
-  Error: function foo should is missing a return statement
+  Error: function foo is missing a return statement
   ```
 </details>
 
+> Note: is flow sensitive because depends on the structure of earlier statements 
+
 ## 3. Operations on variables of the wrong types
 ```python
-1 x = 1
-2 y = 'hello'
-3 print(x+y) # this would generate a TypeError, but our project detects this statically  
+1 if b:
+2     x = 1
+3 else: 
+4    x = "foo"
+5 print(x + 'hello') # this would generate a TypeError during runtime if b is True, but our project detects this statically
 ```
 
 <details>
@@ -46,6 +52,8 @@
   Error: Operands for + operator has different types x (1) and y ('hello')
   ```
 </details>
+
+> Note: is flow sensitive because depends on data flow of variable types across branches
 
 ## 4. Redefined Loop Variables
 ```python
@@ -61,6 +69,8 @@
   Error: Loop variable i overwritten in body on line 3
   ```
 </details>
+
+> Note: is flow sensitive because analyzing variables depends on whether they are defined as loop variables in earlier statements
 
 ## 5. Cell variable defined in loop
 
@@ -80,7 +90,9 @@
   ```
 </details>
 
-### Else clause on loop without a break statement
+> Note: is flow sensitive because analyzing closures depends on whether the variables were defined in a loop in earlier statements
+
+## 6. Else clause on loop without a break statement
 ```python
 1 def contains(list, number):
 2    for i in list:
@@ -97,3 +109,5 @@
   Error: potential unintended behavior detected in for loop with else clause on line 6 since no break statement
   ```
 </details>
+
+> Note: is flow sensitive because depends on whether the else block is defined for a `for` loop and whether the for loop has a break statement

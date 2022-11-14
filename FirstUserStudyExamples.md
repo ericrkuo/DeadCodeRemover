@@ -39,7 +39,7 @@
 ## 3. Operations on variables of the wrong types
 ```python
 1 if b:
-2     x = 1
+2    x = 1
 3 else: 
 4    x = "foo"
 5 print(x + 'hello') # this would generate a TypeError during runtime if b is True, but our project detects this statically

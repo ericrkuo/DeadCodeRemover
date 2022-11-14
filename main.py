@@ -48,6 +48,3 @@ def visit_blocks(block, indent="", visited=[], calls=True):
             visit_blocks(exit.target, indent + "  ", visited, calls=calls)
 
 visit_blocks(cfg.entryblock)
-
-for _, fun_cfg in cfg.functioncfgs.items():
-    visit_blocks(fun_cfg.entryblock)

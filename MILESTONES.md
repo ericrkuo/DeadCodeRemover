@@ -1,5 +1,50 @@
+# Milestone 3
+Full details can be found at [Milestone 3](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.3stvz762s38c)
+
+## Progress against Planned Timeline & Changes to Original Design
+- We changed our idea from a dynamic program analysis dealing with traces to a static program analysis dealing with quirks of a programming language
+- We’ve made substantial progress in researching more about CFGs and data-flow analysis and have experimented with several CFG libraries
+- Updated our Main Responsibilities & Deadlines to adjust to the new project
+    - See [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=kix.lind24l64u5p)
+- We decided to use Python rather than JavaScript
+    - We tried two JS CFG static analysis libraries in the below PR, but both of them were not well maintained and documented, nor did they provide features we wanted (such as CFG for function calls, line numbers, and access to original AST)
+    - PR: https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/pull/3 
+- We discussed several checks we could do in Python - some of the main checks can be found [here](FirstUserStudyExamples.md)
+- Bootstrapped our repository with the Scalpel library used to generate CFGs for Python
+    - Experimented with their CFG and read their documentation/source code
+    - We believe the library provides us with all the information we need
+    - PR: https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/pull/4 
+- Prepared and conducted first user study - results shown below
+- Began discussing possible visualization ideas
+- In terms of next steps
+    - Yu & Kai are currently working on a prototype that statically analyzes one of the checks our project will make. Once he creates the MVP and lays out the basic groundwork, we’ll be implementing the remaining checks
+    - Jin & Eric will be starting our visualization prototype
+
+## First User Study Results
+Note: full results can be found [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.9vxmjono8y9o)
+
+We created a series of example inputs and outputs to show to our users. It can be found at [FirstUserStudyExamples.md](FirstUserStudyExamples.md)
+
+Some of the main feedback we received were:
+
+- Users suggested standardizing the format of the line numbers
+    - E.g. mixing line numbers in the error messages hard to read
+- Users wanted to see a preview of the relevant lines of code so that they don’t have to read line numbers first to navigate to the code
+- Users also suggested considering integrating our program analysis in VSCode so that it could highlight relevant portions of code, rather than a command line tool
+    - Or a way to generate links to navigate to the respective block of code
+    - Another pro is that we could run our program analysis linter AS the user types their code
+- Users found the word “Error:” at the beginning of the output messages a bit redundant.
+    - Suggestion was to either remove or to have different classes such as Error, Warning, etc.
+    - This was because some of our examples weren’t 100% errors, just unintended side effects, so a simple warning could suffice
+- Users were a bit confused whether our linter analyzes across functions/files or whether it only looks at a single function. We’ll need to clarify this as a group
+
+## Notes of any important changes/feedback from TA discussion
+- Jifeng said our progress looks very good.
+- He gave one suggestion which is for us to consider more complicated examples with more sophisticated control flow, generate their Control Flow Graphs, and consider how your analysis will tackle these situations (especially by looking at the Control Flow Graphs).
+    - Our group fully agrees since some of our current examples that utilize the full capabilities of the generated CFGs. We'll be iterating on this feedback, and will try to come up with more complex/sophisticated examples by Milestone 4.
+
 # Milestone 2
-Full details can be found [Milestone 2](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.w0n4yolpgndx)
+Full details can be found at [Milestone 2](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.w0n4yolpgndx)
 
 ## NOTE
 Jifeng gave us feedback and said our idea doesn't fulfill the requirements for Project 2 since we're not modelling or inferring anything from a single trace of the control flow of the program. He suggseted we can collect a bunch of traces for varing inputs, and then model something based on that. Our group will spend the next one to two days discussing amongst ourselves how we can improve our idea, or we may change our idea.
@@ -46,7 +91,7 @@ Please see our google doc for more details
 Please see our schedule [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.loop0xb0lgqh) for our planned division of main responsibilities between team members and roadmap for what should be done when including specific goals for completion by future Milestones.
 
 ## Notes of any important changes/feedback from TA discussion
-
+- Please see the beginning paragraph for Milestone 2
 
 # Milestone 1
 

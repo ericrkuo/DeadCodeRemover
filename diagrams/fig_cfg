@@ -1,0 +1,19 @@
+digraph clusterfib {
+	graph [label=fib]
+	3 [label="#3
+a, b = 0, 1
+"]
+	4 [label="#4
+while True:
+"]
+	5 [label="#5
+yield a
+"]
+	7 [label="#7
+a, b = b, a + b
+"]
+	7 -> 4 [label=""]
+	5 -> 7 [label=""]
+	4 -> 5 [label=True]
+	3 -> 4 [label=""]
+}

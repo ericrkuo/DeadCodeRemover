@@ -1,0 +1,16 @@
+digraph "clusterexample.py" {
+	graph [label="example.py"]
+	1 [label="#1
+def fib():...
+fib_gen = fib()
+"]
+	9 [label="#9
+for _ in range(10):
+"]
+	10 [label="#10
+next(fib_gen)
+"]
+	10 -> 9 [label=""]
+	9 -> 10 [label="range(10)"]
+	1 -> 9 [label=""]
+}

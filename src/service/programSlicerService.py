@@ -12,7 +12,6 @@ class ProgramSlicerService:
         self.astUtils = ASTUtils()
         '''The CFG to which we want to apply program slicing'''
 
-    # TODO can we add type hints???
     def slice(self, block: Block, state: AbstractState):
 
         statement: ast.AST

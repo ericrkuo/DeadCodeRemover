@@ -21,7 +21,8 @@ class ProgramSlicerService:
             if type(statement) is not ast.Assign:
                 continue
 
-            # TODO extract out into its own function
+            # TODO extract out into its own analyze or analyzeAssign function and write tests
+            # we need to be careful that none of our future changes break existing behaviour
             # analyze(σ, n, x=e)
 
             # line number
@@ -42,12 +43,11 @@ class ProgramSlicerService:
                     # S_e = M(y_0) ∪ M(y_1) ∪ ... ∪ M(y_n) where y_0,...,y_n are vars read in e
                     # TODO what if array of vars (Just THINK of more cases)
                     # TODO write tests for this, include array case
-                    # https://stackoverflow.com/a/33554224 
-                    ys = self.astUtils.getAllVariables(value)
-                    S_e = set().union(*[state.M.get(var, {}) for var in ys])
+                    varsRead = self.astUtils.getAllVariables(value)
+                    S_e = set().union(*[state.M.get(var, {}) for var in varsRead])
                     state.M[x] = set().union({n}, S_e, S_l)
                 
-                # TODO document this case
+                # Handle special cases like (a,b) = (1,2)
                 elif type(target) is ast.Tuple and type(value) is ast.Tuple:
 
                     assert len(target.elts) == len(value.elts) # TODO raise exception and add appropriate error message
@@ -57,8 +57,8 @@ class ProgramSlicerService:
 
                         x = tNode.id
                         vNode = value.elts[i]
-                        ys = self.astUtils.getAllVariables(vNode)
-                        S_e = set().union(*[state.M.get(var, {}) for var in ys])
+                        varsRead = self.astUtils.getAllVariables(vNode)
+                        S_e = set().union(*[state.M.get(var, {}) for var in varsRead])
                         state.M[x] = set().union({n}, S_e, S_l)
 
                 else:

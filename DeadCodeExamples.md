@@ -2,7 +2,7 @@
 
 ## Code instrumentation that obstructs the core logic of a program
 
-In real world scenarios, code is often instrumented with things like logging, metrics, and tracing. However, these can cloud away the core logic of the program, and is considered dead code since it doesn't yielf results to the core logic of the program.
+In real world scenarios, code is often instrumented with things like logging, metrics, and tracing. However, these can cloud away the core logic of the program, and is considered dead code since it doesn't yield results to the core logic of the program.
 
 For example, consider this pseudocode implementing breadth first search. After a bunch of the dead code is removed, the resulting program is on the right. It's much easier to understand, not only for the original developer who wrote the code, but also for new developers who may be new to the code base and tasked with modifying the code.
 

@@ -24,3 +24,14 @@ print(x)
 print(y)
 print(z)
 print(w)
+
+# further complex assignments
+arr = [x,y,z]
+var1, var2, var3 = arr
+
+mp = {x: 2, y: 4}
+mp1, mp2 = mp
+# a = 3, b = 5
+
+st = set([z,w])
+st1, st2 = st

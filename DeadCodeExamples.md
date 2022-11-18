@@ -57,7 +57,7 @@ public void BFS(int n)
 <td>
 
 ```java
-void BFS(int n)  
+public void BFS(int n)  
 {  
     boolean nodes[] = new boolean[node];       
     int a = 0;  

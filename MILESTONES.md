@@ -12,6 +12,10 @@ Full details can be found at [Milestone 4](https://docs.google.com/document/d/1r
 - Visualization ideas
     - What lines a variable depends on and where they’re modified
 
+## Plans for the Final User Study
+
+We’ll be redoing our first user study on Saturday, and will aim to finish development by next Saturday. After that, we’ll reserve the following weekend (26th and 27th) for our final user study.
+
 ## Status of Implementation So Far
 - We researched heavily into program slicing and dead code optimization
 - We’ve made a PR for basic program slicing 

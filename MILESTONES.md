@@ -7,13 +7,9 @@ Full details can be found at [Milestone 4](https://docs.google.com/document/d/1r
 - Progress against the timeline planned for your team, including the specific goals you defined (originally as part of Milestone 2) for Milestone 4; any revisions to Milestone 5 goals.
 
 ## Meeeting Feedback from Jifeng
-- Updating MILESTONES.md
-    - Keep a record of our OLD stuff
-- Visualization ideas
-    - What lines a variable depends on and where they’re modified
+We showed Jifeng our prototype for program slicing and he seemed happy with it. Jifeng suggested we keep an old copy of our MILESTONES.md since we changed our project idea, that way the other TAs will not be confused why our M1, M2, and M3 were all updated at the same time. He also gave us an idea of some visualizations we could do such as what lines a varibale depends on and where they're modified.
 
 ## Plans for the Final User Study
-
 We’ll be redoing our first user study on Saturday, and will aim to finish development by next Saturday. After that, we’ll reserve the following weekend (26th and 27th) for our final user study.
 
 ## Status of Implementation So Far
@@ -24,11 +20,10 @@ We’ll be redoing our first user study on Saturday, and will aim to finish deve
         - a = b = c = 1
         - (a,b) = (x+y, z)
         - (a,b) = (c,d) = (x,y+z)
-- Created a practical example illustrating our use case - DeadCodeExamples.md 
+- Created a practical example illustrating our use case - [DeadCodeExamples.md](DeadCodeExamples.md)
 - Got approval of idea from Jifeng and Alex
 - Identified use case, and target audience
 - Plans for the Final User Study
-- We’ll be redoing our first user study on Saturday, and will aim to finish development by next Saturday. After that, we’ll reserve the following weekend (26th and 27th) for our final user study.
 
 ## Next Steps
 - We’ve got to redo Milestone 2 and 3
@@ -43,6 +38,8 @@ We’ll be redoing our first user study on Saturday, and will aim to finish deve
 - We’ll also need to document our design choices
     - Alex’s email pointed out some good things like what separates our project from what we learned in class vs the paper
 
+## Progress against planned timeline
+So far we're on progress according to our **new** planned timeline. We've split up tasks amongst ourselves, set the respective owners and the deadlines we'll finish them by.
 
 # Milestone 3
 Full details can be found at [Milestone 3](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.3stvz762s38c)

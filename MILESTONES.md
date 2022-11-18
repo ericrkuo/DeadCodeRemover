@@ -1,3 +1,45 @@
+# Milestone 4
+Full details can be found at [Milestone 4](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.baebxgea595b)
+
+- Status of implementation so far.
+- Plans for the final user study.
+- Planned timeline for the remaining days.
+- Progress against the timeline planned for your team, including the specific goals you defined (originally as part of Milestone 2) for Milestone 4; any revisions to Milestone 5 goals.
+
+## Meeeting Feedback from Jifeng
+- Updating MILESTONES.md
+    - Keep a record of our OLD stuff
+- Visualization ideas
+    - What lines a variable depends on and where they’re modified
+
+## Status of Implementation So Far
+- We researched heavily into program slicing and dead code optimization
+- We’ve made a PR for basic program slicing 
+    - https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/pull/9 
+    - No control flow, but covers complex variable assignment scenarios in Python such as
+        - a = b = c = 1
+        - (a,b) = (x+y, z)
+        - (a,b) = (c,d) = (x,y+z)
+- Created a practical example illustrating our use case - DeadCodeExamples.md 
+- Got approval of idea from Jifeng and Alex
+- Identified use case, and target audience
+- Plans for the Final User Study
+- We’ll be redoing our first user study on Saturday, and will aim to finish development by next Saturday. After that, we’ll reserve the following weekend (26th and 27th) for our final user study.
+
+## Next Steps
+- We’ve got to redo Milestone 2 and 3
+    - For M2 this includes
+    - 3 guidelines we’re targeting
+    - How this compares to other tools
+    - Sketch of output visualization
+    - TODO check if others
+- For M3 this includes
+    - First user study
+    - Mockup of how our project is supposed to operate (visualization/design)
+- We’ll also need to document our design choices
+    - Alex’s email pointed out some good things like what separates our project from what we learned in class vs the paper
+
+
 # Milestone 3
 Full details can be found at [Milestone 3](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.3stvz762s38c)
 

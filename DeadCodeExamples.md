@@ -47,7 +47,8 @@ public void BFS(int n)
             this.metrics.emit(new BFSQueueSizeExceededEvent(n, que));
             this.logger.log("Queue size exceeded threshold of " + this.PROGRAM_THRESHOLD);
         }
-    }  
+    } 
+    this.metrics.emit(new BFSEndEvent(n));
     this.logger.log("BFS finished for node {n}")
     span.end();
 }  

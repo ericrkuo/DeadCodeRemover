@@ -24,4 +24,11 @@ class TestASTUtils:
         tree = ast.parse(code)
         tree = tree.body[0].value # get ast.Assign.Value
         result = self.astUtils.getAllVariables(tree)
-        assert result == {'y', 'x', 'z'}
+        assert result == {'y', 'x'}
+
+    def test_simpleAssignmentShouldIgnoreFunctionCallAndKeepRelevantFunctionParameters(self):
+        code = 'x = x + y + 10 + foo(a,b+c)'
+        tree = ast.parse(code)
+        tree = tree.body[0].value # get ast.Assign.Value
+        result = self.astUtils.getAllVariables(tree)
+        assert result == {'y', 'x', 'a', 'b', 'c'}

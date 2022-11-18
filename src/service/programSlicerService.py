@@ -47,7 +47,7 @@ class ProgramSlicerService:
                 # S_e = M(y_0) ∪ M(y_1) ∪ ... ∪ M(y_n) where y_0,...,y_n are vars read in e
                 # TODO what if array of vars (Just THINK of more cases)
                 # TODO write tests for this, include array case
-                varsRead = self.astUtils.getAllVariables(value)
+                varsRead = self.astUtils.getAllReferencedVariables(value)
                 S_e = set().union(*[state.M.get(var, {}) for var in varsRead])
                 state.M[x] = set().union({n}, S_e, S_l)
             
@@ -61,7 +61,7 @@ class ProgramSlicerService:
 
                     x = tNode.id
                     vNode = value.elts[i]
-                    varsRead = self.astUtils.getAllVariables(vNode)
+                    varsRead = self.astUtils.getAllReferencedVariables(vNode)
                     S_e = set().union(*[state.M.get(var, {}) for var in varsRead])
                     state.M[x] = set().union({n}, S_e, S_l)
 

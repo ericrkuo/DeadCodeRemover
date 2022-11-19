@@ -5,7 +5,12 @@ y = x
 s, b = y, 100
 
 # declaring an array
-a = [x, y]
+a = [x, y, 0]
+
+# assign index of array
+a[0] = s
+a[1] = (x,y)
+a[2] = [x,3]
 
 # assign same value to multiple variables
 e = r = a

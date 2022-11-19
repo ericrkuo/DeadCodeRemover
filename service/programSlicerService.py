@@ -57,22 +57,30 @@ class ProgramSlicerService:
             if type(target) is ast.Name:
                 self.updateState(state, target.id, value, n)
             
-            # Handle special cases like (a,b) = (1,2)
-            elif type(target) is ast.Tuple and type(value) is ast.Tuple:
-                if (len(target.elts) != len(value.elts)):
-                    raise Exception('Unexpected error: the number of target variables does not equal the number of values assigned')
+            elif (type(target) is ast.Tuple or type(target) is ast.List):
 
-                tNode: ast.Name
-                for i, tNode in enumerate(target.elts):
-                    vNode = value.elts[i]
-                    self.updateState(state, tNode.id, vNode, n)
+                # Handle cases like (a,b) = (1,2) | [a,b] = (1,2) | (a,b) = [1,2] | [a,b] = [1,2]    
+                if type(value) is ast.Tuple or type(value) is ast.List:
+                    if (len(target.elts) != len(value.elts)):
+                        raise Exception('Unexpected error: the number of target variables does not equal the number of values assigned')
 
-            # Handle unpacking cases like a,b,c = arr where arr = [1,2,3]
-            elif type(target) is ast.Tuple and type(value) is ast.Name:
-                tNode: ast.Name
-                for i, tNode in enumerate(target.elts):
-                    self.updateState(state, tNode.id, value, n)
-   
+                    tNode: ast.Name
+                    for i, tNode in enumerate(target.elts):
+                        vNode = value.elts[i]
+                        self.updateState(state, tNode.id, vNode, n)
+
+                # Handle unpacking cases like a,b,c = arr | [a,b,c] = arr where arr = [1,2,3]
+                elif type(value) is ast.Name:
+                    tNode: ast.Name
+                    for i, tNode in enumerate(target.elts):
+                        self.updateState(state, tNode.id, value, n)
+
+            # Handle cases like a[2] = b | a[2] = (1,2) | a[2] = [1,2] | a[1:2] = [1,2]
+            # Note: we don't care what type value is because only a is affected
+            elif type(target) is ast.Subscript or type(target) is ast.Slice:
+                tNode: ast.Name = target.value
+                self.updateState(state, tNode.id, value, n)
+
             else:
                 raise Exception(f'Unexpected error: encountered unsupported target in an assignment call {target}')
 

@@ -1,5 +1,5 @@
 import ast
-from src.visitor.astVisitor import ASTVisitor
+from visitor.astVisitor import ASTVisitor
 
 
 class TestASTVisitor:

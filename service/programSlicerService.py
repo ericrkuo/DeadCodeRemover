@@ -10,6 +10,8 @@ class ProgramSlicerService:
     def __init__(self, cfg):
         self.cfg = cfg
         self.funcNames = set()
+        self.effectiveVars = set()      # set of all effective vars; all retunred vars from func are effective
+        self.effectiveFuncs = ['print'] # all vars  that are used in these functions are effective
         self.astVisitor = ASTVisitor()
         '''The CFG to which we want to apply program slicing'''
 
@@ -26,6 +28,11 @@ class ProgramSlicerService:
 
             if type(statement) is ast.Assign:
                 self.analyzeAssign(state, statement)
+
+            if type(statement) is ast.Return:
+                vs = self.astVisitor.getAllReferencedVariables(statement.value)
+                for v in vs:
+                    self.effectiveVars.add(convertVarname(v, state.funcName))
 
         # TODO handle loops, conditionals, etc.
 
@@ -71,6 +78,9 @@ class ProgramSlicerService:
                 state.funcName = funcName
                 self.slice(fun_cfg.entryblock, state)
                 state.funcName = currentName
+
+        # if func in self.effectiveFuncs:
+            
     
 
     # TODO write tests, we need to be careful that none of our future changes break existing behaviour

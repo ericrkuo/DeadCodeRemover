@@ -9,6 +9,7 @@ class ProgramSlicerService:
 
     def __init__(self, cfg):
         self.cfg = cfg
+        self.funcNames = set()
         self.astVisitor = ASTVisitor()
         '''The CFG to which we want to apply program slicing'''
 
@@ -17,6 +18,7 @@ class ProgramSlicerService:
         statement: ast.AST
         for statement in block.statements:
             if type(statement) is ast.FunctionDef:
+                self.funcNames.add(statement.name)
                 # self.analyzeFunctionDef(state, statement)
                 
             if type(statement) is ast.Expr:
@@ -53,16 +55,16 @@ class ProgramSlicerService:
         line_num = call.lineno
         func = call.func
         args = call.args
-        # print(args)
-        # print(vars(call))
-        # print(func.id)
+        for arg in args:
+            varname = convertVarname(arg.id, state.funcName)
+            if varname in state.M:
+                state.M[convertVarname(arg.id, state.funcName)].add(line_num)
         for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
             if funcName == func.id:
                 currentName = state.funcName
                 state.funcName = funcName
                 self.slice(fun_cfg.entryblock, state)
                 state.funcName = currentName
-        
     
 
     # TODO write tests, we need to be careful that none of our future changes break existing behaviour
@@ -132,16 +134,22 @@ class ProgramSlicerService:
             n: the line number of the statement
         '''
         varsRead = self.astVisitor.getAllReferencedVariables(value)
+                
+        S_l = set().union(*[list for list in state.L])
+        S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
+        state.M[targetVariable] = set().union({n}, S_e, S_l)
+        
+        # if RHS is function call, we explore the function as the function is not dead
         for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
             if funcName in varsRead:
                 currentName = state.funcName
                 state.funcName = funcName
                 self.slice(fun_cfg.entryblock, state)
                 state.funcName = currentName
-                
-        S_l = set().union(*[list for list in state.L])
-        S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
-        state.M[targetVariable] = set().union({n}, S_e, S_l)
+                # all params to the function should also be dependent on this line since the function might mutate it
+                for var in varsRead:
+                    if var not in self.funcNames:
+                        state.M[convertVarname(var, state.funcName)].add(n)
 
 
 def convertVarname(name: str, funcName: str):

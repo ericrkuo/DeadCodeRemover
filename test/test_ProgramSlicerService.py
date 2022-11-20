@@ -5,19 +5,22 @@ from textwrap import dedent
 
 class TestProgramSlicerService:
 
+    def init(self, code):
+        self.state = AbstractState()
+        self.cfg = CFGBuilder().build_from_src('cfg', dedent(code).split('\n', 1)[1])
+        self.programSlicerService = ProgramSlicerService(self.cfg)
+
     def test_mytest(self):
         code = '''
         x = 42
         y = x
         '''
+        self.init(code)
+        self.state = self.programSlicerService.slice(self.cfg.entryblock, self.state)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {1,2}}
-
-        cfg = CFGBuilder().build_from_src('cfg', dedent(code).split('\n', 1)[1])
-        state = AbstractState()
-        programSlicerService = ProgramSlicerService(cfg)
-        state = programSlicerService.slice(cfg.entryblock, state)
+        expectedState.M = {':x': {1}, ':y': {1,2}}
         
-        assert state.M == expectedState.M
-        assert state.L == expectedState.L
+        assert self.state.M == expectedState.M
+        assert self.state.L == expectedState.L
+    

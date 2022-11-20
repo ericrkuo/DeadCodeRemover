@@ -2,7 +2,7 @@ import graphviz
 import ast
 from scalpel.cfg import CFGBuilder
 
-cfg = CFGBuilder().build_from_file('example.py', './example.py')
+cfg = CFGBuilder().build_from_file('../example_inputs/ifExample.py', './example_inputs/ifExample.py')
 
 # Render diagrams
 dot = cfg.build_visual('png')
@@ -36,6 +36,7 @@ def visit_blocks(block, indent="", visited=[], calls=True):
 
         # visit CFGs for other functions
         for statement in block.statements:
+            print(statement.lineno, type(statement))
             if type(statement) is ast.FunctionDef:
                 fun_cfg = next(fun_cfg for (_, fun_name), fun_cfg in cfg.functioncfgs.items() if fun_name=="fib")
                 if fun_cfg:

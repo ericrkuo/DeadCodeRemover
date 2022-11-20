@@ -16,15 +16,51 @@ class ProgramSlicerService:
 
         statement: ast.AST
         for statement in block.statements:
-
             if type(statement) is not ast.Assign:
                 continue
             
             self.analyzeAssign(state, statement)
 
         # TODO handle loops, conditionals, etc.
+        # If condition
+        statement = block.statements[-1]
+        if type(statement) is ast.If:
+            return self.analyzeIf(state, statement, block)
+        elif type(statement) is ast.While:
+            pass
 
         return state
+
+    def analyzeIf(self, state: AbstractState, statement: ast.If, block: Block):
+        
+        varsRead = self.astVisitor.getAllReferencedVariables(statement.test)
+        # print(statement.lineno, varsRead)
+        curr_L = set().union(*[state.M.get(var, {}) for var in varsRead])
+        state.L.append(curr_L)
+      
+        curr_state = AbstractState()
+        curr_state.M = state.M.copy()
+        curr_state.L = state.L.copy()
+        
+        union_state = AbstractState()
+        for exit in block.exits:
+            # TODO: find block number
+            # blockNum = exit.target.at() - 1
+            # print(blockNum)
+            # curr_state.L[-1].add(blockNum)
+            curr_state = self.slice(exit.target, curr_state)
+            # take union
+            vars = set(union_state.M.keys()).union(set(curr_state.M.keys()))
+            for var in vars:
+                union_state.M[var] = union_state.M.get(var, set()).union(curr_state.M.get(var, set()))
+            # init curr_state
+            curr_state.M = state.M.copy()
+            curr_state.L = state.L.copy()
+        state.M = union_state.M.copy()
+        state.L.pop()
+        
+        return state
+        
 
     # TODO write tests, we need to be careful that none of our future changes break existing behaviour
     def analyzeAssign(self, state: AbstractState, statement: ast.Assign):

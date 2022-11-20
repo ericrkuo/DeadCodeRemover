@@ -10,7 +10,7 @@ class ASTVisitor(ast.NodeVisitor):
     # TODO write tests for this
     def getAllFunctionCallVars(self, node):
         '''
-        Get's all variable names referneced in the given AST
+        Get all variable names referenced in a function call
         '''
         self.functionCallArgs = set()
         super().visit(node)

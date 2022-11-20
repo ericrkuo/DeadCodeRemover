@@ -11,8 +11,8 @@ if x != y:
   if z > 0:
     y = x + 3
     print('hello')
-# elif x > 0:
-#   a = 2
+elif x > 0:
+  a = 2
 else:
   y = 1
 

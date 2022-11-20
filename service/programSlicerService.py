@@ -12,6 +12,19 @@ class ProgramSlicerService:
         self.astVisitor = ASTVisitor()
         '''The CFG to which we want to apply program slicing'''
 
+    def sliceWithoutCFG(self, node: ast.AST, state: AbstractState):
+        if type(node) is ast.Module:
+            for child in node.body:
+                self.sliceWithoutCFG(child, state)
+
+        elif type(node) is ast.Assign:
+            self.analyzeAssign(state, node)
+
+        elif type(node) is ast.If:
+            self.analyzeIfWithoutCFG(state, node)
+        
+        return state
+
     def slice(self, block: Block, state: AbstractState):
 
         statement: ast.AST
@@ -30,6 +43,34 @@ class ProgramSlicerService:
             pass
 
         return state
+
+    def analyzeIfWithoutCFG(self, state: AbstractState, statement: ast.If):
+        varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
+
+        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
+        state.L.append(curr_L)
+
+        bodyState = AbstractState()
+        bodyState.M = state.M.copy()
+        bodyState.L= state.L.copy()
+
+        orElseState = AbstractState()
+        orElseState.M = state.M.copy()
+        orElseState.L= state.L.copy()
+
+        for node in statement.body:
+            bodyState = self.sliceWithoutCFG(node, bodyState)
+
+        for node in statement.orelse:
+            orElseState = self.sliceWithoutCFG(node, orElseState)
+
+        # union
+        unionVars = set(bodyState.M.keys()).union(set(orElseState.M.keys()))
+        state.M = dict()
+        for var in unionVars:
+            state.M[var] = bodyState.M.get(var, set()).union(orElseState.M.get(var, set()))
+        state.L.pop()
+        
 
     def analyzeIf(self, state: AbstractState, statement: ast.If, block: Block):
         

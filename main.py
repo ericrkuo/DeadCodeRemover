@@ -12,8 +12,13 @@ if __name__ == "__main__":
     filepath = args[0]
     cfg = CFGBuilder().build_from_file('cfg', filepath)
 
+    with open(filepath, 'r',encoding="utf8") as src_file:
+        src = src_file.read()
+        tree = ast.parse(src, mode='exec')
+
     state = AbstractState()
     programSlicerService = ProgramSlicerService(cfg)
     
-    state = programSlicerService.slice(cfg.entryblock, state)
+    # state = programSlicerService.slice(cfg.entryblock, state)
+    state = programSlicerService.sliceWithoutCFG(tree, state)
     print(f'Abstract state after program slicing:\n{str(state)}')

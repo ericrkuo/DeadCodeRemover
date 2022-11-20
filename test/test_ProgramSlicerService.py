@@ -66,6 +66,22 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {1, 5}, ':y': {5}, 'fn:x': {3}, }
+        expectedState.M = {':x': {1}, ':y': {4}, 'fn:x': {3}, }
+        
+        self.assertState(expectedState)
+
+    def test_nested_func_calls(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        def fn2(a):
+            x = 2
+        y = fn(fn2(0))
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {':x': {1}, ':y': {6}, 'fn:x': {3}, 'fn2:x': {5}}
         
         self.assertState(expectedState)

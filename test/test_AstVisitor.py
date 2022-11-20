@@ -74,4 +74,17 @@ class TestASTVisitor:
         tree = tree.body[0].value # get ast.Assign.Value
         result = self.astVisitor.getAllReferencedVariables(tree)
         assert result == {'i', 's', 'myarray'}
+    
+    def test_ifStatement(self):
+        code = 'x > 0'
+        tree = ast.parse(code)
+        tree = tree.body[0].value # get ast.Assign.Value
+        result = self.astVisitor.getAllReferencedVariables(tree)
+        assert result == {'x'}
 
+    def test_ifStatementWithMultiVar(self):
+        code = 'x == y + z'
+        tree = ast.parse(code)
+        tree = tree.body[0].value # get ast.Assign.Value
+        result = self.astVisitor.getAllReferencedVariables(tree)
+        assert result == {'x', 'y', 'z'}

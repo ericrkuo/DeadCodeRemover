@@ -2,6 +2,7 @@ from model.abstractState import AbstractState
 from service.programSlicerService import ProgramSlicerService
 from scalpel.cfg import CFGBuilder
 from textwrap import dedent
+import ast
 
 class TestProgramSlicerService:
 
@@ -18,6 +19,7 @@ class TestProgramSlicerService:
         state = AbstractState()
         programSlicerService = ProgramSlicerService(cfg)
         state = programSlicerService.slice(cfg.entryblock, state)
+        # state = programSlicerService.sliceWithoutCFG(ast.parse(code, mode='exe'), state)
         
         assert state.M == expectedState.M
         assert state.L == expectedState.L

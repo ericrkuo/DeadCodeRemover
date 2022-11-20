@@ -16,12 +16,15 @@ class ProgramSlicerService:
         if type(node) is ast.Module:
             for child in node.body:
                 self.sliceWithoutCFG(child, state)
+        else:
+          if type(node) is ast.Assign:
+              self.analyzeAssign(state, node)
 
-        elif type(node) is ast.Assign:
-            self.analyzeAssign(state, node)
-
-        elif type(node) is ast.If:
-            self.analyzeIfWithoutCFG(state, node)
+          elif type(node) is ast.If:
+              self.analyzeIfWithoutCFG(state, node)
+        
+          ## node is statement
+          state.maxLN = max(state.maxLN, node.lineno)
         
         return state
 
@@ -53,14 +56,14 @@ class ProgramSlicerService:
         bodyState = AbstractState()
         bodyState.M = state.M.copy()
         bodyState.L= state.L.copy()
-
+        
         orElseState = AbstractState()
         orElseState.M = state.M.copy()
         orElseState.L= state.L.copy()
-
+        
         for node in statement.body:
             bodyState = self.sliceWithoutCFG(node, bodyState)
-
+        
         for node in statement.orelse:
             orElseState = self.sliceWithoutCFG(node, orElseState)
 

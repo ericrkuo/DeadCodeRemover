@@ -14,4 +14,4 @@ def fn2(a, b):
     print(a)
 
 fn2(x, y)
-x = fn(x, x)
+x = fn(fn2(x, y), x)

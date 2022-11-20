@@ -134,6 +134,7 @@ class ProgramSlicerService:
             n: the line number of the statement
         '''
         varsRead = self.astVisitor.getAllReferencedVariables(value)
+        funcCalls = self.astVisitor.getAllFunctionCalls(value)
                 
         S_l = set().union(*[list for list in state.L])
         S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
@@ -141,15 +142,16 @@ class ProgramSlicerService:
         
         # if RHS is function call, we explore the function as the function is not dead
         for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
-            if funcName in varsRead:
+            if funcName in funcCalls:
                 currentName = state.funcName
                 state.funcName = funcName
                 self.slice(fun_cfg.entryblock, state)
                 state.funcName = currentName
                 # all params to the function should also be dependent on this line since the function might mutate it
                 for var in varsRead:
-                    if var not in self.funcNames:
-                        state.M[convertVarname(var, state.funcName)].add(n)
+                    varname = convertVarname(var, state.funcName)
+                    if var not in self.funcNames and varname in state.M:
+                        state.M[varname].add(n)
 
 
 def convertVarname(name: str, funcName: str):

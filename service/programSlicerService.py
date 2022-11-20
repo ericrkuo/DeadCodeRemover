@@ -15,10 +15,45 @@ class ProgramSlicerService:
                 self.slice(child, state)
 
         elif type(node) is ast.Assign:
-              self.analyzeAssign(state, node)
+            self.analyzeAssign(state, node)
 
         elif type(node) is ast.If:
             self.analyzeIf(state, node)
+        
+        elif type(node) is ast.For:
+            self.analyzeFor(state, node)
+    
+    def analyzeFor(self, state: AbstractState, statement: ast.For):
+        '''
+        Handle program slicing for an for loop statement.
+
+        Algorithm:
+
+        1. Update the mapping of target variables in for loop
+        1. Update the L stack with the mapping of the current varibales in the loop condition
+        2. Run program slicing across the then block `ast.For::body`
+        4. Continue slicing until the current state is the same as the previous one
+        5. Pop the L stack
+        '''
+        # update the mapping of target variables in for loop
+        targetVars = self.astVisitor.getAllReferencedVariables(statement.target)
+        for var in targetVars:
+            self.updateState(state, var, statement.iter, statement.lineno)
+        # update state.L
+        iterVars = self.astVisitor.getAllReferencedVariables(statement.iter)
+        curr_L = set([statement.lineno]).union(*[state.M.get(var, {}) for var in iterVars])
+        state.L.append(curr_L)
+        
+        # continue slicing until the current state is the same as the previous one
+        preState = state.copy()
+        for node in statement.body:
+            self.slice(node, state)
+        while not preState.isSame(state):
+            preState = state.copy()
+            for node in statement.body:
+              self.slice(node, state)
+        
+        state.L.pop()
         
     def analyzeIf(self, state: AbstractState, statement: ast.If):
         '''

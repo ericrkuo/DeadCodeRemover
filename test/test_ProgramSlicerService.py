@@ -293,3 +293,56 @@ class TestProgramSlicerService:
         expectedState.M = {'x': {1}, 'y': {2,7,1,3}, 'b': {3}, 'a': {1,2,3,5}}
 
         self.assertState(expectedState)
+
+    def test_forLoopBasic(self):
+        code = '''
+        x = 42
+        y = 2
+        z = 1
+
+        arr = [x, y, z]
+        for val in arr:
+            print(val)  
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6}}
+
+        self.assertState(expectedState)
+    
+    def test_forLoopWithRange(self):
+        code = '''
+        x = 42
+        y = 2
+
+        arr = [x, y]
+        for i in range(len(arr)):
+            if i == 0:
+                x = y
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'arr': {1,2,4}, 'i': {1,2,4,5}}
+
+        self.assertState(expectedState) 
+    
+    def test_forLoopWithTuple(self):
+        code = '''
+        x = 42
+        y = 2
+        z = 1
+
+        arr2 = [(x, y), (y, z), (x, z)]
+        for i, j in arr2:
+            print(i, j)
+            x = x + 1
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6}, 'j': {1,2,3,5,6}}
+
+        self.assertState(expectedState) 
+      

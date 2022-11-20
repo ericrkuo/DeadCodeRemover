@@ -17,7 +17,7 @@ class ProgramSlicerService:
         statement: ast.AST
         for statement in block.statements:
             if type(statement) is ast.FunctionDef:
-                self.analyzeFunctionDef(state, statement)
+                # self.analyzeFunctionDef(state, statement)
                 
             if type(statement) is ast.Expr:
                 self.analyzeExpr(state, statement)
@@ -30,6 +30,7 @@ class ProgramSlicerService:
         return state
 
     def analyzeFunctionDef(self, state: AbstractState, functionDef: ast.FunctionDef):
+        # add parameters to state
         args = functionDef.args.args
         for arg in args:
             state.M[convertVarname(arg.arg, functionDef.name)] = set({ arg.lineno })

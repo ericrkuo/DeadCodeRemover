@@ -345,4 +345,37 @@ class TestProgramSlicerService:
         expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6}, 'j': {1,2,3,5,6}}
 
         self.assertState(expectedState) 
-      
+    
+    def test_whileLoopBasic(self):
+        code = '''
+        x = 1
+        y = 2
+        z = 1
+        while z <= 5:
+            y = y + x
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {1,2,3,4,5}, 'z':{3}}
+
+        self.assertState(expectedState)
+    
+    def test_whileLoopWithArray(self):
+        code = '''
+        x = 1
+        y = 2
+        i = 0
+        arr = [1, 2]
+        while i <= 5:
+          if i % 2 == 0:
+            x = x + arr[i]
+          else:
+            y = y + arr[i]
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,3,4,5,7}, 'y': {2,3,4,5,9}, 'i':{3}, 'arr': {4}}
+
+        self.assertState(expectedState)

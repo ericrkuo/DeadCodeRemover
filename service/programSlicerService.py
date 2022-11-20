@@ -22,6 +22,26 @@ class ProgramSlicerService:
         
         elif type(node) is ast.For:
             self.analyzeFor(state, node)
+        
+        elif type(node) is ast.While:
+            self.analyzeWhile(state, node)
+            
+    def analyzeWhile(self, state: AbstractState, statement: ast.While):
+        varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
+
+        curr_L = set([statement.lineno]).union(*[state.M.get(var, {}) for var in varsInCondition])
+        state.L.append(curr_L)
+        
+        preState = state.copy()
+        for node in statement.body:
+            self.slice(node, state)
+        while not preState.isSame(state):
+            preState = state.copy()
+            for node in statement.body:
+              self.slice(node, state)
+        
+        state.L.pop()
+
     
     def analyzeFor(self, state: AbstractState, statement: ast.For):
         '''

@@ -1,109 +1,58 @@
 import ast
-from typing import Type
-from scalpel.cfg import Block
 
 from model.abstractState import AbstractState
 from visitor.astVisitor import ASTVisitor
 
 class ProgramSlicerService:
 
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self):
         self.astVisitor = ASTVisitor()
-        '''The CFG to which we want to apply program slicing'''
 
-    def sliceWithoutCFG(self, node: ast.AST, state: AbstractState):
+    def slice(self, node: ast.AST, state: AbstractState):
+        '''Run program slicing starting from the given `node`. Modify `state` in place, which is why the method has no return value'''
         if type(node) is ast.Module:
             for child in node.body:
-                self.sliceWithoutCFG(child, state)
+                self.slice(child, state)
 
         elif type(node) is ast.Assign:
               self.analyzeAssign(state, node)
 
         elif type(node) is ast.If:
-            self.analyzeIfWithoutCFG(state, node)
+            self.analyzeIf(state, node)
         
-        return state
+    def analyzeIf(self, state: AbstractState, statement: ast.If):
+        '''
+        Handle program slicing for an if statement.
 
-    def slice(self, block: Block, state: AbstractState):
+        Algorithm:
 
-        statement: ast.AST
-        for statement in block.statements:
-            if type(statement) is not ast.Assign:
-                continue
-            
-            self.analyzeAssign(state, statement)
-
-        # TODO handle loops, conditionals, etc.
-        # If condition
-        statement = block.statements[-1]
-        if type(statement) is ast.If:
-            return self.analyzeIf(state, statement, block)
-        elif type(statement) is ast.While:
-            pass
-
-        return state
-
-    def analyzeIfWithoutCFG(self, state: AbstractState, statement: ast.If):
+        1. Update the L stack with the mapping of the current varibales in the condition
+        2. Run program slicing across the then block `ast.If::body`
+        3. Run program slicing across the else block `ast.If::orelse` (if one exists)
+        4. We then union the resulting states from 1 and 2
+        5. Pop the L stack
+        '''
         varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
 
         curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
         state.L.append(curr_L)
 
-        bodyState = AbstractState()
-        bodyState.M = state.M.copy()
-        bodyState.L= state.L.copy()
-        
-        orElseState = AbstractState()
-        orElseState.M = state.M.copy()
-        orElseState.L= state.L.copy()
+        bodyState = state.copy()
+        orElseState = state.copy()
         
         for node in statement.body:
-            bodyState = self.sliceWithoutCFG(node, bodyState)
+            self.slice(node, bodyState)
         
         for node in statement.orelse:
-            orElseState = self.sliceWithoutCFG(node, orElseState)
+            self.slice(node, orElseState)
 
-        # union
-        unionVars = set(bodyState.M.keys()).union(set(orElseState.M.keys()))
+        # Union the resulting states
+        unionVars = set().union(bodyState.M.keys(), orElseState.M.keys())
         state.M = dict()
         for var in unionVars:
-            state.M[var] = bodyState.M.get(var, set()).union(orElseState.M.get(var, set()))
+            state.M[var] = set().union(bodyState.M.get(var, {}), orElseState.M.get(var, {}))
         state.L.pop()
-        
 
-    def analyzeIf(self, state: AbstractState, statement: ast.If, block: Block):
-        
-        varsRead = self.astVisitor.getAllReferencedVariables(statement.test)
-        # print(statement.lineno, varsRead)
-        curr_L = set().union(*[state.M.get(var, {}) for var in varsRead])
-        state.L.append(curr_L)
-      
-        curr_state = AbstractState()
-        curr_state.M = state.M.copy()
-        curr_state.L = state.L.copy()
-        
-        union_state = AbstractState()
-        for exit in block.exits:
-            # TODO: find block number
-            # blockNum = exit.target.at() - 1
-            # print(blockNum)
-            # curr_state.L[-1].add(blockNum)
-            curr_state = self.slice(exit.target, curr_state)
-            # take union
-            vars = set(union_state.M.keys()).union(set(curr_state.M.keys()))
-            for var in vars:
-                union_state.M[var] = union_state.M.get(var, set()).union(curr_state.M.get(var, set()))
-            # init curr_state
-            curr_state.M = state.M.copy()
-            curr_state.L = state.L.copy()
-        state.M = union_state.M.copy()
-        state.L.pop()
-        
-        return state
-        
-
-    # TODO write tests, we need to be careful that none of our future changes break existing behaviour
     def analyzeAssign(self, state: AbstractState, statement: ast.Assign):
         '''
         Run the program slicing analysis function analyze(σ, n, ast.Assign).

@@ -7,5 +7,10 @@ def fn(a, b):
     z = y + a
     return z
 
-
 x = fn(x, y)
+
+def fn2(a, b):
+    z = 5
+    print(a)
+
+fn2()

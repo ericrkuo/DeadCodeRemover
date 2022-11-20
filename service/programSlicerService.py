@@ -36,17 +36,26 @@ class ProgramSlicerService:
             
     def analyzeCall(self, state: AbstractState, call: ast.Call):
         '''
-        Handles function calls with no assignment
+        Handles function calls withoutassignment; eg, handles `fn()` but not `x = fn()`
         In case parameters are mutated within the function, we pesmistically assume
-        the parameter depends on the line of the function call
+        the parameter depends on the line number of the function call; 
+        ie, given x -> {1, 2} and `fn(x)` on line 4
+        now, x -> {1, 2, 4}
         '''
         # TODO handle nested func calls
-        line_num = statement.lineno
+        line_num = call.lineno
         func = call.func
         args = call.args
-        funcName = func.id
-        print(args[0].id)
+        print(args)
         print(vars(call))
+        print(func.id)
+        for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
+            if funcName == func.id:
+                currentName = state.funcName
+                state.funcName = funcName
+                self.slice(fun_cfg.entryblock, state)
+                state.funcName = currentName
+        
     
 
     # TODO write tests, we need to be careful that none of our future changes break existing behaviour

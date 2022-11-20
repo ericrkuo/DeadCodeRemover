@@ -1,3 +1,4 @@
+import ast
 from model.abstractState import AbstractState
 from service.programSlicerService import ProgramSlicerService
 from scalpel.cfg import CFGBuilder
@@ -8,7 +9,10 @@ class TestProgramSlicerService:
     def init(self, code):
         self.cfg = CFGBuilder().build_from_src('cfg', dedent(code).split('\n', 1)[1])
         self.programSlicerService = ProgramSlicerService(self.cfg)
-        self.state = self.programSlicerService.slice(self.cfg.entryblock, AbstractState())
+        # self.state = self.programSlicerService.sliceWith(self.cfg.entryblock, AbstractState())
+
+        tree = ast.parse(dedent(code).split('\n', 1)[1], mode='exec')
+        self.state = self.programSlicerService.sliceWithoutCFG(tree, AbstractState())
 
     def assertState(self, expectedState):
         assert self.state.M == expectedState.M

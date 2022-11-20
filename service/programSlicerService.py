@@ -1,56 +1,68 @@
 import ast
-from typing import Type
-from scalpel.cfg import Block
 
 from model.abstractState import AbstractState
 from visitor.astVisitor import ASTVisitor
 
 class ProgramSlicerService:
 
-    def __init__(self, cfg):
-        self.cfg = cfg
-        self.funcNames = set()
+    def __init__(self):
         self.astVisitor = ASTVisitor()
-        '''The CFG to which we want to apply program slicing'''
 
-    def sliceWithoutCFG(self, node: ast.AST, state: AbstractState):
+    def slice(self, node: ast.AST, state: AbstractState):
+        '''Run program slicing starting from the given `node`. Modify `state` in place, which is why the method has no return value'''
         if type(node) is ast.Module:
             for child in node.body:
-                self.sliceWithoutCFG(child, state)
+                self.slice(child, state)
 
         elif type(node) is ast.Assign:
-            self.analyzeAssign(state, node)
+              self.analyzeAssign(state, node)
+
+        elif type(node) is ast.If:
+            self.analyzeIf(state, node)
 
         elif type(node) is ast.FunctionDef:
-            self.analyzeFunctionDefWithoutCFG(state, node)
+            self.analyzeFunctionDef(state, node)
 
         elif type(node) is ast.Expr:
             self.sliceWithoutCFG(node.value, state)
 
         elif type(node) is ast.Call:
-            self.analyzeCallWithoutCFG(state, node)
-
-        return state
-
-    def slice(self, block: Block, state: AbstractState):
+            self.analyzeCall(state, node)
         
-        statement: ast.AST
-        for statement in block.statements:
-            if type(statement) is ast.FunctionDef:
-                self.funcNames.add(statement.name)
-                # self.analyzeFunctionDef(state, statement)
-                
-            if type(statement) is ast.Expr:
-                self.analyzeExpr(state, statement)
+    def analyzeIf(self, state: AbstractState, statement: ast.If):
+        '''
+        Handle program slicing for an if statement.
 
-            if type(statement) is ast.Assign:
-                self.analyzeAssign(state, statement)
+        Algorithm:
 
-        # TODO handle loops, conditionals, etc.
+        1. Update the L stack with the mapping of the current varibales in the condition
+        2. Run program slicing across the then block `ast.If::body`
+        3. Run program slicing across the else block `ast.If::orelse` (if one exists)
+        4. We then union the resulting states from 1 and 2
+        5. Pop the L stack
+        '''
+        varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
 
-        return state
+        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
+        state.L.append(curr_L)
 
-    def analyzeFunctionDefWithoutCFG(self, state: AbstractState, statement: ast.FunctionDef):
+        bodyState = state.copy()
+        orElseState = state.copy()
+        
+        for node in statement.body:
+            self.slice(node, bodyState)
+        
+        for node in statement.orelse:
+            self.slice(node, orElseState)
+
+        # Union the resulting states
+        unionVars = set().union(bodyState.M.keys(), orElseState.M.keys())
+        state.M = dict()
+        for var in unionVars:
+            state.M[var] = set().union(bodyState.M.get(var, {}), orElseState.M.get(var, {}))
+        state.L.pop()
+
+    def analyzeFunctionDef(self, state: AbstractState, statement: ast.FunctionDef):
         currentName = state.funcName
         state.funcName = statement.name
 
@@ -58,58 +70,22 @@ class ProgramSlicerService:
             self.sliceWithoutCFG(node, state)
 
         state.funcName = currentName
-
-    def analyzeFunctionDef(self, state: AbstractState, functionDef: ast.FunctionDef):
-        # add parameters to state
-        args = functionDef.args.args
-        for arg in args:
-            state.M[convertVarname(arg.arg, functionDef.name)] = set({ arg.lineno })
-        
-        
-    def analyzeExpr(self, state: AbstractState, expr: ast.Expr):
-        if type(expr.value) is ast.Call:
-            self.analyzeCall(state, expr.value)
    
 
-    def analyzeCallWithoutCFG(self, state: AbstractState, statement: ast.Call):
-        '''All variables referenced in the call should pessimistcally depend on line n'''
+    def analyzeCall(self, state: AbstractState, statement: ast.Call):
+        '''
+        Handles function calls withou tassignment; eg, handles `fn()` but not `x = fn()`
+        In case parameters are mutated within the function, we pesmistically assume
+        that all variables referenced in the call depends on the line number of the function call; 
+        ie, given x -> {1, 2} and `fn(x)` on line 4
+        now, x -> {1, 2, 4}
+        '''
         n = statement.lineno
         vars = self.astVisitor.getAllReferencedVariables(statement)
         for var in vars:
             varName = convertVarname(var, state.funcName)
             state.M[varName] = set().union(state.M.get(varName, {}), {n})
 
-    def analyzeCall(self, state: AbstractState, call: ast.Call):
-        '''
-        Handles function calls withoutassignment; eg, handles `fn()` but not `x = fn()`
-        In case parameters are mutated within the function, we pesmistically assume
-        the parameter depends on the line number of the function call; 
-        ie, given x -> {1, 2} and `fn(x)` on line 4
-        now, x -> {1, 2, 4}
-        '''
-        # TODO handle nested func calls
-        line_num = call.lineno
-        func = call.func
-        args = call.args
-        vars = set()
-        # consider side effect for the input variable
-        for arg in args:
-            varnames = [convertVarname(varname, state.funcName) for varname in self.astVisitor.getAllReferencedVariables(arg)]
-            for varname in varnames:
-                if varname in state.M:
-                    state.M[varname].add(line_num)
-        # explore the called functions
-        # TODO memoization
-        funcNames = self.astVisitor.getAllFunctionCalls(call)
-        for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
-            if funcName in funcNames:
-                currentName = state.funcName
-                state.funcName = funcName
-                self.slice(fun_cfg.entryblock, state)
-                state.funcName = currentName
-    
-
-    # TODO write tests, we need to be careful that none of our future changes break existing behaviour
     def analyzeAssign(self, state: AbstractState, statement: ast.Assign):
         '''
         Run the program slicing analysis function analyze(σ, n, ast.Assign).
@@ -187,20 +163,6 @@ class ProgramSlicerService:
         for funcCallVar in funcCallVars:
             varName = convertVarname(funcCallVar, state.funcName)
             state.M[varName] = set().union(state.M.get(varName, {}), {n})
-
-        # # if RHS is function call, we explore the function as the function is not dead
-        # for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
-        #     if funcName in funcCalls:
-        #         currentName = state.funcName
-        #         state.funcName = funcName
-        #         self.slice(fun_cfg.entryblock, state)
-        #         state.funcName = currentName
-        #         # all params to the function should also be dependent on this line since the function might mutate it
-        #         for var in varsRead:
-        #             varname = convertVarname(var, state.funcName)
-        #             if var not in self.funcNames and varname in state.M:
-        #                 state.M[varname].add(n)
-
 
 def convertVarname(name: str, funcName: str):
     return f'{funcName}:{name}'

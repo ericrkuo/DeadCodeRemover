@@ -56,18 +56,17 @@ class ProgramSlicerService:
         func = call.func
         args = call.args
         vars = set()
+        # consider side effect for the input variable
         for arg in args:
-            if type(arg) is ast.Call:
-                self.analyzeCall(state, arg)
-                continue
-            if type(arg) is ast.Name:
-                varname = convertVarname(arg.id, state.funcName)
-                # consider side effect for the input variable
+            varnames = [convertVarname(varname, state.funcName) for varname in self.astVisitor.getAllReferencedVariables(arg)]
+            for varname in varnames:
                 if varname in state.M:
-                    state.M[convertVarname(arg.id, state.funcName)].add(line_num)
-        # explore the called function
+                    state.M[varname].add(line_num)
+        # explore the called functions
+        # TODO memoization
+        funcNames = self.astVisitor.getAllFunctionCalls(call)
         for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
-            if funcName == func.id:
+            if funcName in funcNames:
                 currentName = state.funcName
                 state.funcName = funcName
                 self.slice(fun_cfg.entryblock, state)

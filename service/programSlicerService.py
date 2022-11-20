@@ -1,32 +1,58 @@
 import ast
-from typing import Type
-from scalpel.cfg import Block
 
 from model.abstractState import AbstractState
 from visitor.astVisitor import ASTVisitor
 
 class ProgramSlicerService:
 
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self):
         self.astVisitor = ASTVisitor()
-        '''The CFG to which we want to apply program slicing'''
 
-    def slice(self, block: Block, state: AbstractState):
+    def slice(self, node: ast.AST, state: AbstractState):
+        '''Run program slicing starting from the given `node`. Modify `state` in place, which is why the method has no return value'''
+        if type(node) is ast.Module:
+            for child in node.body:
+                self.slice(child, state)
 
-        statement: ast.AST
-        for statement in block.statements:
+        elif type(node) is ast.Assign:
+              self.analyzeAssign(state, node)
 
-            if type(statement) is not ast.Assign:
-                continue
-            
-            self.analyzeAssign(state, statement)
+        elif type(node) is ast.If:
+            self.analyzeIf(state, node)
+        
+    def analyzeIf(self, state: AbstractState, statement: ast.If):
+        '''
+        Handle program slicing for an if statement.
 
-        # TODO handle loops, conditionals, etc.
+        Algorithm:
 
-        return state
+        1. Update the L stack with the mapping of the current varibales in the condition
+        2. Run program slicing across the then block `ast.If::body`
+        3. Run program slicing across the else block `ast.If::orelse` (if one exists)
+        4. We then union the resulting states from 1 and 2
+        5. Pop the L stack
+        '''
+        varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
 
-    # TODO write tests, we need to be careful that none of our future changes break existing behaviour
+        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
+        state.L.append(curr_L)
+
+        bodyState = state.copy()
+        orElseState = state.copy()
+        
+        for node in statement.body:
+            self.slice(node, bodyState)
+        
+        for node in statement.orelse:
+            self.slice(node, orElseState)
+
+        # Union the resulting states
+        unionVars = set().union(bodyState.M.keys(), orElseState.M.keys())
+        state.M = dict()
+        for var in unionVars:
+            state.M[var] = set().union(bodyState.M.get(var, {}), orElseState.M.get(var, {}))
+        state.L.pop()
+
     def analyzeAssign(self, state: AbstractState, statement: ast.Assign):
         '''
         Run the program slicing analysis function analyze(σ, n, ast.Assign).

@@ -19,6 +19,8 @@ class ASTVisitor(ast.NodeVisitor):
 
         for keyword in node.keywords:
             self.visit(keyword)
+        
+        self.visit(node.func)
 
     def visit_Name(self, node: ast.Name):
         self.variablesSeen.add(node.id)

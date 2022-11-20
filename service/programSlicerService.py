@@ -13,21 +13,27 @@ class ProgramSlicerService:
         '''The CFG to which we want to apply program slicing'''
 
     def slice(self, block: Block, state: AbstractState):
-
+        
         statement: ast.AST
         for statement in block.statements:
+            if type(statement) is ast.FunctionDef:
+                self.analyzeFunctionDef(state, statement)
+                
             if type(statement) is ast.Expr:
                 self.analyzeExpr(state, statement)
 
-            if type(statement) is not ast.Assign:
-                continue
-            
-            self.analyzeAssign(state, statement)
+            if type(statement) is ast.Assign:
+                self.analyzeAssign(state, statement)
 
         # TODO handle loops, conditionals, etc.
 
         return state
 
+    def analyzeFunctionDef(self, state: AbstractState, functionDef: ast.FunctionDef):
+        args = functionDef.args.args
+        for arg in args:
+            state.M[convertVarname(arg.arg, functionDef.name)] = set({ arg.lineno })
+        
         
     def analyzeExpr(self, state: AbstractState, expr: ast.Expr):
         if type(expr.value) is ast.Call:
@@ -46,9 +52,9 @@ class ProgramSlicerService:
         line_num = call.lineno
         func = call.func
         args = call.args
-        print(args)
-        print(vars(call))
-        print(func.id)
+        # print(args)
+        # print(vars(call))
+        # print(func.id)
         for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
             if funcName == func.id:
                 currentName = state.funcName
@@ -138,4 +144,4 @@ class ProgramSlicerService:
 
 
 def convertVarname(name: str, funcName: str):
-    return f'{funcName}_{name}'
+    return f'{funcName}:{name}'

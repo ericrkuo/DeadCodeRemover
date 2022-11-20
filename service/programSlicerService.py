@@ -55,10 +55,17 @@ class ProgramSlicerService:
         line_num = call.lineno
         func = call.func
         args = call.args
+        vars = set()
         for arg in args:
-            varname = convertVarname(arg.id, state.funcName)
-            if varname in state.M:
-                state.M[convertVarname(arg.id, state.funcName)].add(line_num)
+            if type(arg) is ast.Call:
+                self.analyzeCall(state, arg)
+                continue
+            if type(arg) is ast.Name:
+                varname = convertVarname(arg.id, state.funcName)
+                # consider side effect for the input variable
+                if varname in state.M:
+                    state.M[convertVarname(arg.id, state.funcName)].add(line_num)
+        # explore the called function
         for (_, funcName), fun_cfg in self.cfg.functioncfgs.items():
             if funcName == func.id:
                 currentName = state.funcName

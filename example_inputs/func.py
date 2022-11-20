@@ -13,5 +13,5 @@ def fn2(a, b):
     z = 5
     print(a)
 
-fn2(x, y)
-x = fn(fn2(x, y), x)
+fn2(1, fn2(x, y))
+x = fn(fn2(x, 1), x)

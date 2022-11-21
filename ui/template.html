@@ -1,0 +1,28 @@
+<pre id="display"></pre>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+<script>
+// https://github.com/kpdecker/jsdiff/issues/198#issuecomment-615167141
+const style = {
+    added: 'background-color: rgb(204, 232, 204);color: green;',
+    removed: 'background-color: rgb(232, 204, 204);color: red;',
+    same: 'color: grey;'
+};
+
+const originalCode =  `{{originalCode}}`;
+const deletedCode = `{{deletedCode}}`;
+const color = '';
+
+const diff = Diff.diffLines(originalCode, deletedCode),
+    display = document.getElementById('display'),
+    fragment = document.createDocumentFragment();
+
+diff.forEach((part) => {
+  const span = document.createElement('span');
+  span.style = part.added ? style.added : part.removed ? style.removed : style.same
+  span.appendChild(document
+    .createTextNode(part.value));
+  fragment.appendChild(span);
+});
+
+display.appendChild(fragment);
+</script>

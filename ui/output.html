@@ -1,28 +1,14 @@
-from jinja2 import Environment, FileSystemLoader
-import os
+<pre id="display"></pre>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+<script>
+// https://github.com/kpdecker/jsdiff/issues/198#issuecomment-615167141
+const style = {
+    added: 'background-color: rgb(204, 232, 204);color: green;',
+    removed: 'background-color: rgb(232, 204, 204);color: red;',
+    same: 'color: grey;'
+};
 
-class generateReport:
-    def __init__(self, input, output):
-        self.input = input
-        self.output = output
-
-
-    def generateHTMLReport(self):
-        root = os.path.dirname(os.path.abspath(__file__))
-        env = Environment( loader = FileSystemLoader("") )
-        template = env.get_template('template.html')
-        
-        
-        filename = os.path.join(root, 'output.html')
-        with open(filename, 'w') as fh:
-            fh.write(template.render(
-                originalCode = self.input,
-                deletedCode = self.output
-            ))
-
-
-originalCode = """
-public void BFS(int n)  
+const originalCode =  `public void BFS(int n)  
 {  
     this.metrics.emit(new BFSStartEvent(n));
     this.logger.log("BFS triggered for node {n}")
@@ -58,12 +44,8 @@ public void BFS(int n)
     this.metrics.emit(new BFSEndEvent(n));
     this.logger.log("BFS finished for node {n}")
     span.end();
-}  
-"""
-
-
-deletedCode = """
-public void BFS(int n)  
+}`;
+const deletedCode = `public void BFS(int n)  
 {  
     boolean nodes[] = new boolean[node];       
     int a = 0;  
@@ -82,12 +64,20 @@ public void BFS(int n)
             }  
         } 
     }
-}   
-"""
+}`;
+const color = '';
 
-htmlReport = generateReport(originalCode.rstrip(), deletedCode.rstrip())
+const diff = Diff.diffLines(originalCode, deletedCode),
+    display = document.getElementById('display'),
+    fragment = document.createDocumentFragment();
 
+diff.forEach((part) => {
+  const span = document.createElement('span');
+  span.style = part.added ? style.added : part.removed ? style.removed : style.same
+  span.appendChild(document
+    .createTextNode(part.value));
+  fragment.appendChild(span);
+});
 
-
-
-htmlReport.generateHTMLReport()
+display.appendChild(fragment);
+</script>

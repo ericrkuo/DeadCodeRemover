@@ -74,7 +74,7 @@ class ProgramSlicerService:
 
     def analyzeCall(self, state: AbstractState, statement: ast.Call):
         '''
-        Handles function calls withou tassignment; eg, handles `fn()` but not `x = fn()`
+        Handles function calls without assignment; eg, handles `fn()` but not `x = fn()`
         In case parameters are mutated within the function, we pesmistically assume
         that all variables referenced in the call depends on the line number of the function call; 
         ie, given x -> {1, 2} and `fn(x)` on line 4

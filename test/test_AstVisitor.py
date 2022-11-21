@@ -93,9 +93,9 @@ class TestASTVisitor:
         result = self.astVisitor.getAllReferencedVariables(tree)
         assert result == {'x', 'y', 'z'}
 
-    #---------------------------#
-    # getAllFunctionCallVars    #
-    #---------------------------#
+    #------------------------#
+    # getAllFunctionCallVars #
+    #------------------------#
 
     def test_getFunctionCallVariables(self):
         code = 'foo(a,b)'

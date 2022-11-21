@@ -12,10 +12,6 @@ if __name__ == "__main__":
         src = src_file.read()
         tree = ast.parse(src, mode='exec')
 
-    with open(filepath, 'r',encoding="utf8") as src_file:
-        src = src_file.read()
-        tree = ast.parse(src, mode='exec')
-
     state = AbstractState()
     programSlicerService = ProgramSlicerService()
     programSlicerService.slice(tree, state)

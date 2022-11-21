@@ -96,7 +96,7 @@ class TestProgramSlicerService:
     ("(a,b)", "(c,d)", "[x+y,y]"),
     ("[a,b]", "(c,d)", "[x+y,y]"),
     ])
-    def test_assignTuplesOrLists(self, i1, i2, output):
+    def test_assignTuplesOrListsToSameVariables(self, i1, i2, output):
         code = f'''
         x = 42
         y = 10
@@ -294,6 +294,41 @@ class TestProgramSlicerService:
 
         self.assertState(expectedState)
 
+
+    # ---------------------#
+    # AUG ASSIGNMENT TESTS #
+    # ---------------------#
+
+    def test_simpleAugAssignment(self):
+        code = '''
+        x = 42
+        y = 0
+        y //= x + y
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {1,2,3}}
+
+        self.assertState(expectedState)
+
+    def test_arrayIndexAssignment(self):
+        code = '''
+        x = ['hello']
+        y = ' world' 
+        x[0] += y
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {2,3}, 'y': {2}}
+
+        self.assertState(expectedState) 
+    
+    # ---------------------#
+    # LOOP STATEMENT TESTS #
+    # ---------------------#
+    
     def test_forLoopBasic(self):
         code = '''
         x = 42
@@ -302,8 +337,8 @@ class TestProgramSlicerService:
 
         arr = [x, y, z]
         for val in arr:
-            print(val)  
-        '''
+            print(val)
+        '''  
         self.init(code)
 
         expectedState = AbstractState()
@@ -324,9 +359,10 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'arr': {1,2,4}, 'i': {1,2,4,5}}
+        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4}}
 
-        self.assertState(expectedState) 
+        self.assertState(expectedState)
+
     
     def test_forLoopWithTuple(self):
         code = '''

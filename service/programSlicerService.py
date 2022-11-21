@@ -18,10 +18,7 @@ class ProgramSlicerService:
             self.analyzeAssign(state, node)
 
         elif type(node) is ast.AugAssign:
-              self.analyzeAugAssign(state, node)     
-
-        elif type(node) is ast.AugAssign:
-              self.analyzeAugAssign(state, node)     
+            self.analyzeAugAssign(state, node)
 
         elif type(node) is ast.If:
             self.analyzeIf(state, node)

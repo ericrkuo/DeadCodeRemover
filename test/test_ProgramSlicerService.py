@@ -302,7 +302,7 @@ class TestProgramSlicerService:
         code = '''
         x = 42
         y = 0
-        y //= x + y
+        y //= x
         '''
         self.init(code)
 
@@ -320,6 +320,6 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {2,3}, 'y': {2}}
+        expectedState.M = {'x': {1,2,3}, 'y': {2}}
 
         self.assertState(expectedState)

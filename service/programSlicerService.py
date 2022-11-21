@@ -123,15 +123,16 @@ class ProgramSlicerService:
         n = statement.lineno
 
         target = statement.target
-        value = statement.value
 
+        # NOTE: we pass in statement rather than statement.value because in an augmented assignment
+        # x += y is x = x + y, so actually, we need to union with M[y] AND M[x]
         if type(target) is ast.Name:
-            self.updateState(state, target.id, value, n)
+            self.updateState(state, target.id, statement, n)
         
         # Handle cases like a[2] += 2
         elif type(target) is ast.Subscript:
             tNode: ast.Name = target.value
-            self.updateState(state, tNode.id, value, n)
+            self.updateState(state, tNode.id, statement, n)
 
         else:
             raise Exception(f'Unexpected error: encountered unsupported target in an augmented assignment call {target}')

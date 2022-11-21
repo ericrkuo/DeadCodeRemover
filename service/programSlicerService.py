@@ -71,7 +71,6 @@ class ProgramSlicerService:
             self.updateState(state, var, statement.iter, statement.lineno)
         # update state.L
         iterVars = self.astVisitor.getAllReferencedVariables(statement.iter)
-        targetVars = self.astVisitor.getAllReferencedVariables(statement.target)
         curr_L = set().union(*[state.M.get(var, {}) for var in iterVars]).union(*[state.M.get(var, {}) for var in targetVars])
         state.L.append(curr_L)
         

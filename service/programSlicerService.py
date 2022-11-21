@@ -15,10 +15,10 @@ class ProgramSlicerService:
                 self.slice(child, state)
 
         elif type(node) is ast.Assign:
-              self.analyzeAssign(state, node)
+            self.analyzeAssign(state, node)
 
         elif type(node) is ast.AugAssign:
-              self.analyzeAugAssign(state, node)     
+            self.analyzeAugAssign(state, node)
 
         elif type(node) is ast.If:
             self.analyzeIf(state, node)
@@ -31,6 +31,76 @@ class ProgramSlicerService:
 
         elif type(node) is ast.Call:
             self.analyzeCall(state, node)
+        
+        elif type(node) is ast.For:
+            self.analyzeFor(state, node)
+        
+        elif type(node) is ast.While:
+            self.analyzeWhile(state, node)
+            
+    def analyzeWhile(self, state: AbstractState, statement: ast.While):
+        varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
+
+        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
+        state.L.append(curr_L)
+        
+        preState = state.copy()
+        for node in statement.body:
+            self.slice(node, state)
+        while preState != state:
+            # Union the resulting states
+            unionVars = set().union(state.M.keys(), preState.M.keys())
+            for var in unionVars:
+                state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+            for var in varsInCondition:
+                state.L[-1].union(state.M.get(var, {}))
+          
+            preState = state.copy()
+            for node in statement.body:
+              self.slice(node, state)
+        
+        state.L.pop()
+
+    
+    def analyzeFor(self, state: AbstractState, statement: ast.For):
+        '''
+        Handle program slicing for an for loop statement.
+
+        Algorithm:
+
+        1. Update the mapping of target variables in for loop
+        1. Update the L stack with the mapping of the current varibales in the loop condition
+        2. Run program slicing across the then block `ast.For::body`
+        4. Continue slicing until the current state is the same as the previous one
+        5. Pop the L stack
+        '''
+        # update the mapping of target variables in for loop
+        targetVars = self.astVisitor.getAllReferencedVariables(statement.target)
+        for var in targetVars:
+            self.updateState(state, var, statement.iter, statement.lineno)
+        # update state.L
+        iterVars = self.astVisitor.getAllReferencedVariables(statement.iter)
+        curr_L = set().union(*[state.M.get(var, {}) for var in iterVars]).union(*[state.M.get(var, {}) for var in targetVars])
+        state.L.append(curr_L)
+        
+        # continue slicing until the current state is the same as the previous one
+        preState = state.copy()
+        for node in statement.body:
+            self.slice(node, state)
+        while preState != state:
+            # Union the resulting states
+            unionVars = set().union(state.M.keys(), preState.M.keys())
+            for var in unionVars:
+                state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+            for var in targetVars.union(iterVars):
+                state.L[-1].union(state.M.get(var, {}))
+            
+
+            preState = state.copy()
+            for node in statement.body:
+                self.slice(node, state)
+        
+        state.L.pop()
         
     def analyzeIf(self, state: AbstractState, statement: ast.If):
         '''
@@ -156,15 +226,16 @@ class ProgramSlicerService:
         n = statement.lineno
 
         target = statement.target
-        value = statement.value
 
+        # NOTE: we pass in statement rather than statement.value because in an augmented assignment
+        # x += y is x = x + y, so actually, we need to union with M[y] AND M[x]
         if type(target) is ast.Name:
-            self.updateState(state, target.id, value, n)
+            self.updateState(state, target.id, statement, n)
         
         # Handle cases like a[2] += 2
         elif type(target) is ast.Subscript:
             tNode: ast.Name = target.value
-            self.updateState(state, tNode.id, value, n)
+            self.updateState(state, tNode.id, statement, n)
 
         else:
             raise Exception(f'Unexpected error: encountered unsupported target in an augmented assignment call {target}')

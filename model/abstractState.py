@@ -1,3 +1,4 @@
+from __future__ import annotations
 from collections import deque
 import json
 
@@ -26,3 +27,6 @@ class AbstractState:
         copy.M = self.M.copy()
         copy.L = self.L.copy()
         return copy
+    
+    def __eq__(self, other: AbstractState):
+        return self.M == other.M and self.L == other.L

@@ -2,9 +2,7 @@ x = 42
 y = 2
 z = 1
 
-# def foo(x):
-#   for i in range(10):
-#     print(x)
+z = x if y > 0 else z
 
 if x != y:
   y = x + 3

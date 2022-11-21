@@ -28,9 +28,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {4, 5}, 'fn:x': {2}, }
-        
-        self.assertState(expectedState)
+        expectedState.M = {'x': {1}, 'y': {1,2}}
 
         self.assertState(expectedState)
 
@@ -186,7 +184,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {2}, 'set': {1,2,3},
+        expectedState.M = {'x': {1,3}, 'y': {2,3}, 'set': {1,2,3},
             'var1': {1,2,3,4}, 'var2': {1,2,3,4}}
 
         self.assertState(expectedState)
@@ -201,7 +199,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'a': {1}, 'b': {1}, 'c': {1}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
+        expectedState.M = {'a': {1,4}, 'b': {1,4}, 'c': {1,4}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
 
         self.assertState(expectedState)
 
@@ -311,7 +309,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {4, 5}, 'fn:x': {2}, }
+        expectedState.M = {'x': {4, 5}, 'fn:x': {2}, }
         
         self.assertState(expectedState)
 
@@ -326,7 +324,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {4, 5}, ':y': {4, 5}, 'fn:x': {2}, }
+        expectedState.M = {'x': {4, 5}, 'y': {4, 5}, 'fn:x': {2}, }
         
         self.assertState(expectedState)
 
@@ -340,7 +338,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {1}, ':y': {4}, 'fn:x': {3}, }
+        expectedState.M = {'x': {1}, 'y': {4}, 'fn:x': {3}, }
         
         self.assertState(expectedState)
 
@@ -356,7 +354,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {1}, ':y': {6}, 'fn:x': {3}, 'fn2:x': {5}}
+        expectedState.M = {'x': {1}, 'y': {6}, 'fn:x': {3}, 'fn2:x': {5}}
         
         self.assertState(expectedState)
 
@@ -372,7 +370,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {1}, 'fn:x': {3}, 'fn2:x': {5}}
+        expectedState.M = {'x': {1}, 'fn:x': {3}, 'fn2:x': {5}}
         
         self.assertState(expectedState)
 
@@ -388,6 +386,6 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {':x': {1, 6}, 'fn:x': {3}, 'fn2:x': {5}}
+        expectedState.M = {'x': {1, 6}, 'fn:x': {3}, 'fn2:x': {5}}
         
         self.assertState(expectedState)

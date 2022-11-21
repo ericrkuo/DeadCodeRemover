@@ -24,7 +24,7 @@ class ProgramSlicerService:
             self.analyzeFunctionDef(state, node)
 
         elif type(node) is ast.Expr:
-            self.sliceWithoutCFG(node.value, state)
+            self.slice(node.value, state)
 
         elif type(node) is ast.Call:
             self.analyzeCall(state, node)
@@ -63,14 +63,14 @@ class ProgramSlicerService:
         state.L.pop()
 
     def analyzeFunctionDef(self, state: AbstractState, statement: ast.FunctionDef):
+        '''If come across a function definition, we set `AbstractState::funName` and continue slicing. The function name will be used as a prefix inside the map M'''
         currentName = state.funcName
         state.funcName = statement.name
 
         for node in statement.body:
-            self.sliceWithoutCFG(node, state)
+            self.slice(node, state)
 
         state.funcName = currentName
-   
 
     def analyzeCall(self, state: AbstractState, statement: ast.Call):
         '''
@@ -114,7 +114,7 @@ class ProgramSlicerService:
         for target in targets:
             
             if type(target) is ast.Name:
-                self.updateState(state, convertVarname(target.id, state.funcName), value, n)
+                self.updateState(state, target.id, value, n)
             
             elif (type(target) is ast.Tuple or type(target) is ast.List):
 
@@ -126,19 +126,19 @@ class ProgramSlicerService:
                     tNode: ast.Name
                     for i, tNode in enumerate(target.elts):
                         vNode = value.elts[i]
-                        self.updateState(state, convertVarname(tNode.id, state.funcName), vNode, n)
+                        self.updateState(state, tNode.id, vNode, n)
 
                 # Handle unpacking cases like a,b,c = arr | [a,b,c] = arr where arr = [1,2,3]
                 elif type(value) is ast.Name:
                     tNode: ast.Name
                     for i, tNode in enumerate(target.elts):
-                        self.updateState(state, convertVarname(tNode.id, state.funcName), value, n)
+                        self.updateState(state, tNode.id, value, n)
 
             # Handle cases like a[2] = b | a[2] = (1,2) | a[2] = [1,2] | a[1:2] = [1,2]
             # Note: we don't care what type value is because only a is affected
             elif type(target) is ast.Subscript or type(target) is ast.Slice:
                 tNode: ast.Name = target.value
-                self.updateState(state, convertVarname(tNode.id, state.funcName), value, n)
+                self.updateState(state, tNode.id, value, n)
 
             else:
                 raise Exception(f'Unexpected error: encountered unsupported target in an assignment call {target}')
@@ -152,17 +152,16 @@ class ProgramSlicerService:
             n: the line number of the statement
         '''
         varsRead = self.astVisitor.getAllReferencedVariables(value)
-        # funcCalls = self.astVisitor.getAllFunctionCalls(value)
         funcCallVars = self.astVisitor.getAllFunctionCallVars(value)
                 
         S_l = set().union(*[list for list in state.L])
         S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
-        state.M[targetVariable] = set().union({n}, S_e, S_l)
+        state.M[convertVarname(targetVariable, state.funcName)] = set().union({n}, S_e, S_l)
         
-        # if RHS is a function call, we explore the function as the function is not dead
+        # if RHS has a function call, we explore the function as the function is not dead
         for funcCallVar in funcCallVars:
             varName = convertVarname(funcCallVar, state.funcName)
             state.M[varName] = set().union(state.M.get(varName, {}), {n})
 
 def convertVarname(name: str, funcName: str):
-    return f'{funcName}:{name}'
+    return f'{funcName}:{name}' if funcName else name

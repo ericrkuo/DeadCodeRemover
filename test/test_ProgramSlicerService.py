@@ -96,7 +96,7 @@ class TestProgramSlicerService:
     ("(a,b)", "(c,d)", "[x+y,y]"),
     ("[a,b]", "(c,d)", "[x+y,y]"),
     ])
-    def test_assignTuplesOrLists(self, i1, i2, output):
+    def test_assignTuplesOrListsToSameVariables(self, i1, i2, output):
         code = f'''
         x = 42
         y = 10
@@ -291,5 +291,35 @@ class TestProgramSlicerService:
 
         expectedState = AbstractState()
         expectedState.M = {'x': {1}, 'y': {2,7,1,3}, 'b': {3}, 'a': {1,2,3,5}}
+
+        self.assertState(expectedState)
+
+    # ---------------------#
+    # AUG ASSIGNMENT TESTS #
+    # ---------------------#
+
+    def test_simpleAugAssignment(self):
+        code = '''
+        x = 42
+        y = 0
+        y //= x + y
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {1,2,3}}
+
+        self.assertState(expectedState)
+
+    def test_arrayIndexAssignment(self):
+        code = '''
+        x = ['hello']
+        y = ' world' 
+        x[0] += y
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {2,3}, 'y': {2}}
 
         self.assertState(expectedState)

@@ -45,6 +45,22 @@ class TestProgramSlicerService:
         
         self.assertState(expectedState)
 
+    def test_func_with_assign_should_differentiate_param_and_operand_vars(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        z = 5
+        y = fn(x)+z
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 6}, 'y': {4, 5, 6}, 'z': {5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
     def test_func_with_assign(self):
         code = '''
         def fn(a):

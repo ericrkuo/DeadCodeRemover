@@ -29,13 +29,20 @@ class ProgramSlicerService:
     def analyzeWhile(self, state: AbstractState, statement: ast.While):
         varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
 
-        curr_L = set([statement.lineno]).union(*[state.M.get(var, {}) for var in varsInCondition])
+        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
         state.L.append(curr_L)
         
         preState = state.copy()
         for node in statement.body:
             self.slice(node, state)
-        while not preState.isSame(state):
+        while preState != state:
+            # Union the resulting states
+            unionVars = set().union(state.M.keys(), preState.M.keys())
+            for var in unionVars:
+                state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+            for var in varsInCondition:
+                state.L[-1].union(state.M.get(var, {}))
+          
             preState = state.copy()
             for node in statement.body:
               self.slice(node, state)
@@ -61,17 +68,26 @@ class ProgramSlicerService:
             self.updateState(state, var, statement.iter, statement.lineno)
         # update state.L
         iterVars = self.astVisitor.getAllReferencedVariables(statement.iter)
-        curr_L = set([statement.lineno]).union(*[state.M.get(var, {}) for var in iterVars])
+        targetVars = self.astVisitor.getAllReferencedVariables(statement.target)
+        curr_L = set().union(*[state.M.get(var, {}) for var in iterVars]).union(*[state.M.get(var, {}) for var in targetVars])
         state.L.append(curr_L)
         
         # continue slicing until the current state is the same as the previous one
         preState = state.copy()
         for node in statement.body:
             self.slice(node, state)
-        while not preState.isSame(state):
+        while preState != state:
+            # Union the resulting states
+            unionVars = set().union(state.M.keys(), preState.M.keys())
+            for var in unionVars:
+                state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+            for var in targetVars.union(iterVars):
+                state.L[-1].union(state.M.get(var, {}))
+            
+
             preState = state.copy()
             for node in statement.body:
-              self.slice(node, state)
+                self.slice(node, state)
         
         state.L.pop()
         

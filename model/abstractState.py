@@ -25,20 +25,5 @@ class AbstractState:
         copy.L = self.L.copy()
         return copy
     
-    def isSame(self, target: AbstractState):
-        # check M
-        if set(self.M.keys()) != set(target.M.keys()):
-            return False
-        
-        for key in self.M.keys():
-            if self.M[key] != target.M[key]:
-                return False
-        
-        # check L
-        if len(self.L) != len(target.L):
-            return False
-        for s, t in zip(self.L, target.L):
-            if s != t:
-                return False
-        
-        return True
+    def __eq__(self, other: AbstractState):
+        return self.M == other.M and self.L == other.L

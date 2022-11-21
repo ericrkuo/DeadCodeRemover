@@ -357,7 +357,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {1,2,3,4,5}, 'z':{3}}
+        expectedState.M = {'x': {1}, 'y': {1,2,3,5}, 'z':{3}}
 
         self.assertState(expectedState)
     
@@ -376,6 +376,6 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,3,4,5,7}, 'y': {2,3,4,5,9}, 'i':{3}, 'arr': {4}}
+        expectedState.M = {'x': {1,3,4,7}, 'y': {2,3,4,9}, 'i':{3}, 'arr': {4}}
 
         self.assertState(expectedState)

@@ -337,12 +337,12 @@ class TestProgramSlicerService:
 
         arr = [x, y, z]
         for val in arr:
-            print(val)
+            foo(val)
         '''  
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6}}
+        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6,7}}
 
         self.assertState(expectedState)
     
@@ -359,7 +359,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4}}
+        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4,5}}
 
         self.assertState(expectedState)
 
@@ -378,7 +378,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6}, 'j': {1,2,3,5,6}}
+        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6,7}, 'j': {1,2,3,5,6,7}}
 
         self.assertState(expectedState) 
     

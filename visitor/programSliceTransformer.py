@@ -2,6 +2,15 @@ import ast
 from model.abstractState import AbstractState
 
 class ProgramSliceTransformer(ast.NodeTransformer):
+    '''
+    This class derives from `ast.NodeTransformer`. 
+    
+    The NodeTransformer will walk the AST and use the return value of the visitor methods to replace or remove the old node.
+    If the return value of the visitor method is None, the node will be removed from its location, otherwise it is replaced with the return value.
+    The return value may be the original node in which case no replacement takes place.
+    
+    See https://docs.python.org/3/library/ast.html#ast.NodeTransformer for more details
+    '''
 
     def getSlicedProgram(self, lineNumbers: set, node: ast.AST) -> ast.AST:
         '''
@@ -58,4 +67,3 @@ class ProgramSliceTransformer(ast.NodeTransformer):
             return None
 
         return result
-        

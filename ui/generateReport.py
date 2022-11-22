@@ -3,18 +3,45 @@ import os
 
 class ReportGenerator:
 
-    def generateHTMLReport(self, input, output):
+# input is the original code and output is code after deleting dead code
+# lines removed is an list with the line number removed
+    def generateHTMLReport(self, input, output, linesRemovedArr, effectiveVariableMap):
         root = os.path.dirname(os.path.abspath(__file__))
         env = Environment( loader = FileSystemLoader("") )
         template = env.get_template('ui/template.html')
-        
+        codeWithVariable = {}
+        # converting line number to code for that line
+        for key in effectiveVariableMap:
+            temp = self.getCodeFromLine(input, effectiveVariableMap[key])
+            codeWithVariable[key]= self.linesArrayToString(temp)      
+        print(codeWithVariable)
         filename = os.path.join(root, 'output.html')
         with open(filename, 'w') as fh:
             fh.write(template.render(
                 originalCode = input,
-                deletedCode = output
+                deletedCode = output,
+                linesRemoved = linesRemovedArr,
+                numberOfLinesRemoved = len(linesRemoved),
+                variableUsedIn = codeWithVariable
             ))
 
+    def getCodeFromLine(self, input, lineNumbers):
+        linesOfInput = input.splitlines()
+        toRemove = []
+        for i in range(0,len(linesOfInput)):
+            if not (i+1 in lineNumbers):
+                toRemove.append(linesOfInput[i])
+        for rem in toRemove:
+            linesOfInput.remove(rem)
+        return linesOfInput
+    # if we be nice if we could show the original line number, but that is hard todo, we can do that if we have extra time.
+    def linesArrayToString(self, linesArray):
+        codeBlock = ""
+        for codeLine in linesArray:
+            codeBlock += codeLine
+            codeBlock += """
+"""
+        return codeBlock.strip()
 
 originalCode = """
 public void BFS(int n)  
@@ -80,5 +107,9 @@ public void BFS(int n)
 }   
 """
 
+linesRemoved = [3,4,5,6,14,15,16,17,27,28,29,30,31,32,33,34,35,36]
+effectiveVariables = {"nodes[]": [7,9,11,12,18,19,21,22,23,25,26,33],
+                        "a" : [8,11,12,18,19,20,21,22,23,24,25,26,33],
+                        "que" : [10,11,12,18,19,20,21,22,24,25,26,33]}
 htmlReport = ReportGenerator()
-htmlReport.generateHTMLReport(originalCode.strip(), deletedCode.strip())
+htmlReport.generateHTMLReport(originalCode.strip(), deletedCode.strip(),linesRemoved, effectiveVariables)

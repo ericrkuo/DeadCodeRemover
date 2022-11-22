@@ -49,6 +49,19 @@
         </div>
       </div>
     </div>
+    <div class="lines-removed">
+      <pre> Number of lines removed: {{numberOfLinesRemoved}}</pre>
+      <pre> Lines removed: {{linesRemoved}}</pre>
+    </div>
+    <div>
+      {% for variables in variableUsedIn %}
+            <pre>Variable: {{variables}}</pre>
+            <pre>Code: </pre>
+            <pre class="line-numbers" style="max-height: none !important;">
+              <code class="language-python">{{variableUsedIn[variables]}}</code>
+              </pre>
+      {% endfor %}
+    </div>
   </body>
 </html>
 <script>
@@ -68,12 +81,12 @@
       fragment = document.createDocumentFragment();
 
   diff.forEach((part) => {
-    const span = document.createElement('span');
-    span.style = part.added ? style.added : part.removed ? style.removed : style.same
-    span.appendChild(document
+    const codeDiffSpan = document.createElement('span');
+    codeDiffSpan.style = part.added ? style.added : part.removed ? style.removed : style.same
+    codeDiffSpan.appendChild(document
       .createTextNode(part.value));
-    fragment.appendChild(span);
+    fragment.appendChild(codeDiffSpan);
   });
-
+  
   display.appendChild(fragment);
   </script>

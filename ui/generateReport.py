@@ -22,7 +22,8 @@ class ReportGenerator:
                 deletedCode = output,
                 linesRemoved = linesRemovedArr,
                 numberOfLinesRemoved = len(linesRemoved),
-                variableUsedIn = codeWithVariable
+                variableUsedIn = codeWithVariable,
+                varMap = effectiveVariableMap
             ))
 
     def getCodeFromLine(self, input, lineNumbers):

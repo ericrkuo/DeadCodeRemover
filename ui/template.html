@@ -56,6 +56,7 @@
     <div>
       {% for variables in variableUsedIn %}
             <pre>Variable: {{variables}}</pre>
+            <pre>Lines (numbered from orignal code) depened on: {{varMap[variables]}}</pre>
             <pre>Code: </pre>
             <pre class="line-numbers" style="max-height: none !important;">
               <code class="language-python">{{variableUsedIn[variables]}}</code>

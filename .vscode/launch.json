@@ -11,7 +11,7 @@
             "program": "${workspaceRoot}/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["./example_inputs/ifExample.py"]
+            "args": ["./example_inputs/func.py"]
         }
     ]
 }

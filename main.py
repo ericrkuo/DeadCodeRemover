@@ -34,6 +34,6 @@ if __name__ == "__main__":
     # print(dependList)
     
     programSliceTransformer = ProgramSliceTransformer()
-    tree = programSliceTransformer.getSlicedProgram(effectiveVariables, tree)
+    tree = programSliceTransformer.getSlicedProgram(effectiveLineNumbers, tree)
     print(f'SLICED PROGRAM for variable {effectiveVariables} \n')
     print(ast.unparse(tree) + '\n')

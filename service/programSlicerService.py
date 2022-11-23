@@ -5,11 +5,8 @@ from visitor.astVisitor import ASTVisitor
 
 class ProgramSlicerService:
 
-    def __init__(self, cfg):
-        self.cfg = cfg
-        self.funcNames = set()
-        self.effectiveVars = set()      # set of all effective vars; all retunred vars from func are effective
-        self.effectiveFuncs = ['print'] # all vars  that are used in these functions are effective
+    def __init__(self):
+        self.effectiveVars: Set(str) = set()
         self.astVisitor = ASTVisitor()
 
     def slice(self, node: ast.AST, state: AbstractState):
@@ -24,10 +21,10 @@ class ProgramSlicerService:
         elif type(node) is ast.AugAssign:
             self.analyzeAugAssign(state, node)
 
-            if type(statement) is ast.Return:
-                vs = self.astVisitor.getAllReferencedVariables(statement.value)
-                for v in vs:
-                    self.effectiveVars.add(convertVarname(v, state.funcName))
+        elif type(node) is ast.Return:
+            vs = self.astVisitor.getAllReferencedVariables(node.value)
+            for v in vs:
+                self.effectiveVars.add(convertVarname(v, state.funcName))
 
         # TODO handle loops, conditionals, etc.
         elif type(node) is ast.If:
@@ -167,6 +164,7 @@ class ProgramSlicerService:
         vars = self.astVisitor.getAllReferencedVariables(statement)
         for var in vars:
             varName = convertVarname(var, state.funcName)
+            self.effectiveVars.add(varName)
             state.M[varName] = set().union(state.M.get(varName, {}), {n})
 
     def analyzeAssign(self, state: AbstractState, statement: ast.Assign):
@@ -266,9 +264,10 @@ class ProgramSlicerService:
         S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
         state.M[convertVarname(targetVariable, state.funcName)] = set().union({n}, S_e, S_l)
         
-        # if RHS has a function call, we explore the function as the function is not dead
+        # if RHS has a function call, passed vars also depend on the line and they are effective
         for funcCallVar in funcCallVars:
             varName = convertVarname(funcCallVar, state.funcName)
+            self.effectiveVars.add(varName)
             state.M[varName] = set().union(state.M.get(varName, {}), {n})
 
 def convertVarname(name: str, funcName: str):

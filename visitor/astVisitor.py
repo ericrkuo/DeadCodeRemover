@@ -2,7 +2,6 @@ import ast
 
 class ASTVisitor(ast.NodeVisitor):
     def __init__(self):
-        self.functionCallsSeen = set()
         self.functionCallArgs = set()
         self.variablesSeen = set()
         self.context = []
@@ -34,8 +33,6 @@ class ASTVisitor(ast.NodeVisitor):
         for keyword in node.keywords:
             self.visit(keyword)
         
-        # self.visit(node.func)
-        self.functionCallsSeen.add(node.func.id)
         self.context.pop()
 
     def visit_Name(self, node: ast.Name):

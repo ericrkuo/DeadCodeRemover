@@ -184,7 +184,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {2}, 'set': {1,2,3},
+        expectedState.M = {'x': {1,3}, 'y': {2,3}, 'set': {1,2,3},
             'var1': {1,2,3,4}, 'var2': {1,2,3,4}}
 
         self.assertState(expectedState)
@@ -199,7 +199,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'a': {1}, 'b': {1}, 'c': {1}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
+        expectedState.M = {'a': {1,4}, 'b': {1,4}, 'c': {1,4}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
 
         self.assertState(expectedState)
 
@@ -337,12 +337,12 @@ class TestProgramSlicerService:
 
         arr = [x, y, z]
         for val in arr:
-            print(val)
+            foo(val)
         '''  
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6}}
+        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6,7}}
 
         self.assertState(expectedState)
     
@@ -359,7 +359,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4}}
+        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4,5}}
 
         self.assertState(expectedState)
 
@@ -378,7 +378,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6}, 'j': {1,2,3,5,6}}
+        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6,7}, 'j': {1,2,3,5,6,7}}
 
         self.assertState(expectedState) 
     
@@ -414,4 +414,116 @@ class TestProgramSlicerService:
         expectedState = AbstractState()
         expectedState.M = {'x': {1,3,4,7}, 'y': {2,3,4,9}, 'i':{3}, 'arr': {4}}
 
+        self.assertState(expectedState)
+
+    # -----------#
+    # FUNC TESTS #
+    # -----------#
+
+    def test_func_no_assign_with_side_effect(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        fn(x)
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
+    def test_func_with_assign_should_differentiate_param_and_operand_vars(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        z = 5
+        y = fn(x)+z
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 6}, 'y': {4, 5, 6}, 'z': {5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
+    def test_func_with_assign(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        y = fn(x)
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 5}, 'y': {4, 5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
+    def test_func_same_varname_should_not_conflict(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        y = fn(0)
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {4}, 'fn:x': {3}, }
+        
+        self.assertState(expectedState)
+
+    def test_nested_func_calls_with_assign(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        def fn2(a):
+            x = 2
+        y = fn(fn2(0))
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {6}, 'fn:x': {3}, 'fn2:x': {5}}
+        
+        self.assertState(expectedState)
+
+    def test_nested_func_calls_no_assign(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        def fn2(a):
+            x = 2
+        fn(fn2(0))
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'fn:x': {3}, 'fn2:x': {5}}
+        
+        self.assertState(expectedState)
+
+    def test_nested_func_calls_no_assign_side_effect(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        def fn2(a):
+            x = 2
+        fn(fn2(x))
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1, 6}, 'fn:x': {3}, 'fn2:x': {5}}
+        
         self.assertState(expectedState)

@@ -14,7 +14,7 @@ if __name__ == "__main__":
         tree = ast.parse(src, mode='exec')
 
     state = AbstractState()
-    programSlicerService = ProgramSlicerService()
+    programSlicerService = ProgramSlicerService(src)
     programSlicerService.slice(tree, state)
     print(f'Abstract state after program slicing:\n{str(state)}\n')
 
@@ -29,9 +29,12 @@ if __name__ == "__main__":
     dependMap = dict()
     for key, lineNums in state.M.items():
         for ln in lineNums:
-            dependMap[ln] = dependMap.get(ln, 0) + 1
-    dependList = sorted(list(dependMap.items()), key=lambda x: x[1])
-    # print(dependList)
+            currDepend, varSet, srcSeg = dependMap.get(ln, (0, set(), state.segment[ln]))
+            varSet.add(key)
+            dependMap[ln] = (currDepend + 1, varSet, srcSeg)
+    # print(dependMap)
+    dependList = sorted([(key, value[0], value[1], value[2]) for key, value in dependMap.items()], key=lambda x: x[1])
+    print(dependList)
     
     programSliceTransformer = ProgramSliceTransformer()
     tree = programSliceTransformer.getSlicedProgram(effectiveLineNumbers, tree)

@@ -1,8 +1,6 @@
-from collections import namedtuple
 from dataclasses import dataclass
 import sys
 import ast
-from typing import Dict
 from model.abstractState import AbstractState
 from service.programSlicerService import ProgramSlicerService
 from visitor.programSliceTransformer import ProgramSliceTransformer

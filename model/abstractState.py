@@ -17,6 +17,9 @@ class AbstractState:
         
         self.segment = dict()
 
+        self.funcName = ''
+        '''Name of the function being analyzed'''
+
     def __str__(self):
         prettyM = "\n".join("  {}\t{}".format(k, v) for k, v in self.M.items())
         return f'M:\n{prettyM}\nL:\n  {str(self.L)}'

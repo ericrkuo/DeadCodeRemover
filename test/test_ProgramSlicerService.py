@@ -1,4 +1,3 @@
-import ast
 import pytest
 from model.abstractState import AbstractState
 from service.programSlicerService import ProgramSlicerService
@@ -550,9 +549,6 @@ class TestProgramSlicerService:
 
     def test_effectiveVars_shouldPickReturnedVars(self):
         code = '''
-        x = 2
-        y = 5
-
         def fn(a, b):
             y = a
             a += 2
@@ -560,12 +556,7 @@ class TestProgramSlicerService:
             return z
 
         x = fn(1, 2)
-
-        def fn2(a, b):
-            z = 5
-
-        fn2(1, fn2(1, 1))
-        x = fn(fn2(1, 1), 1)
+        x = fn(fn(1, 1), 1)
         '''
         self.init(code)
 
@@ -582,51 +573,30 @@ class TestProgramSlicerService:
 
         def fn(a, b):
             y = a
-            a += 2
-            z = y + a
-            return z
 
         x = fn(1, y)
-
-        def fn2(a, b):
-            z = 5
-
-        fn2(1, fn2(1, 1))
-        x = fn(fn2(1, 1), 1)
+        fn(x, 2)
         '''
         self.init(code)
 
         expectedEffectiveVars = set({
-            'fn:z',
-            'y'
+            'y',
+            'x'
         })
 
         self.assertEffectiveVars(expectedEffectiveVars)
 
     def test_effectiveVars_shouldPickArgsWithinFunc(self):
         code = '''
-        x = 2
-        y = 5
-
-        def fn(a, b):
-            y = a
-            a += 2
-            z = y + a
-            return z
-
-        x = fn(1, 2)
-
         def fn2(a, b):
             z = 5
             print(a, b)
 
         fn2(1, fn2(1, 1))
-        x = fn(fn2(1, 1), 1)
         '''
         self.init(code)
 
         expectedEffectiveVars = set({
-            'fn:z',
             'fn2:a',
             'fn2:b'
         })

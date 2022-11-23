@@ -1,16 +1,25 @@
-digraph "clusterexample.py" {
-	graph [label="example.py"]
+digraph "cluster../example_inputs/ifExample.py" {
+	graph [label="../example_inputs/ifExample.py"]
 	1 [label="#1
-def fib():...
-fib_gen = fib()
+x = 42
+y = 2
+z = 1
+if x != y:
 "]
-	9 [label="#9
-for _ in range(10):
+	2 [label="#2
+y = x + 3
 "]
-	10 [label="#10
-next(fib_gen)
+	1 -> 2 [label="x != y"]
+	4 [label="#4
+if z > -1:
 "]
-	10 -> 9 [label=""]
-	9 -> 10 [label="range(10)"]
-	1 -> 9 [label=""]
+	5 [label="#5
+x = 2
+"]
+	4 -> 5 [label="z > -1"]
+	7 [label="#7
+y = 1
+"]
+	4 -> 7 [label="(z <= -1)"]
+	1 -> 4 [label="(x == y)"]
 }

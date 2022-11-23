@@ -5,6 +5,10 @@ from visitor.astVisitor import ASTVisitor
 class TestASTVisitor:
     astVisitor = ASTVisitor()
 
+    #---------------------------#
+    # getAllReferencedVariables #
+    #---------------------------#
+
     def test_simpleAssignment(self):
         code = 'x = y'
         tree = ast.parse(code)
@@ -74,4 +78,49 @@ class TestASTVisitor:
         tree = tree.body[0].value # get ast.Assign.Value
         result = self.astVisitor.getAllReferencedVariables(tree)
         assert result == {'i', 's', 'myarray'}
+    
+    def test_ifStatement(self):
+        code = 'x > 0'
+        tree = ast.parse(code)
+        tree = tree.body[0].value # get ast.Assign.Value
+        result = self.astVisitor.getAllReferencedVariables(tree)
+        assert result == {'x'}
 
+    def test_ifStatementWithMultiVar(self):
+        code = 'x == y + z'
+        tree = ast.parse(code)
+        tree = tree.body[0].value # get ast.Assign.Value
+        result = self.astVisitor.getAllReferencedVariables(tree)
+        assert result == {'x', 'y', 'z'}
+
+    #------------------------#
+    # getAllFunctionCallVars #
+    #------------------------#
+
+    def test_getFunctionCallVariables(self):
+        code = 'foo(a,b)'
+        tree = ast.parse(code)
+        tree = tree.body[0]
+        result = self.astVisitor.getAllFunctionCallVars(tree)
+        assert result == {'a', 'b'}
+
+    def test_getFunctionCallVariablesInAssignment(self):
+        code = 'x = foo(a,b)'
+        tree = ast.parse(code)
+        tree = tree.body[0]
+        result = self.astVisitor.getAllFunctionCallVars(tree)
+        assert result == {'a', 'b'}
+
+    def test_getFunctionCallVariablesMoreComplex(self):
+        code = 'x = foo(a+c,b, [d,e], {f,g})'
+        tree = ast.parse(code)
+        tree = tree.body[0]
+        result = self.astVisitor.getAllFunctionCallVars(tree)
+        assert result == {'a', 'b', 'c', 'd', 'e', 'f', 'g'}
+
+    def test_nestedFunctioncalls(self):
+        code = 'x = foo(a, moo(b, boo(c+d)), self.hello([e]))'
+        tree = ast.parse(code)
+        tree = tree.body[0]
+        result = self.astVisitor.getAllFunctionCallVars(tree)
+        assert result == {'a', 'b', 'c', 'd', 'e'}

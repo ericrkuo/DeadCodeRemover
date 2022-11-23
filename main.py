@@ -21,8 +21,19 @@ if __name__ == "__main__":
     # TODO integrate with earlier pipelines - getting effective vars and resulting lines to keep from merged slices
     print(f'ORIGINAL CODE\n')
     print(src + '\n')
-    variable = list(state.M.keys())[0]
+    effectiveVariables = list(state.M.keys())[:4]
+    
+    effectiveLineNumbers = set().union(*[state.M[var] for var in effectiveVariables])
+    print(effectiveLineNumbers)
+    # find most dependented line numbers
+    dependMap = dict()
+    for key, lineNums in state.M.items():
+        for ln in lineNums:
+            dependMap[ln] = dependMap.get(ln, 0) + 1
+    dependList = sorted(list(dependMap.items()), key=lambda x: x[1])
+    # print(dependList)
+    
     programSliceTransformer = ProgramSliceTransformer()
-    tree = programSliceTransformer.getSlicedProgram(state.M[variable], tree)
-    print(f'SLICED PROGRAM for variable {variable} \n')
+    tree = programSliceTransformer.getSlicedProgram(effectiveVariables, tree)
+    print(f'SLICED PROGRAM for variable {effectiveVariables} \n')
     print(ast.unparse(tree) + '\n')

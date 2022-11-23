@@ -257,7 +257,6 @@ class ProgramSlicerService:
             n: the line number of the statement
         '''
         varsRead = self.astVisitor.getAllReferencedVariables(value)
-        # funcCalls = self.astVisitor.getAllFunctionCalls(value)
         funcCallVars = self.astVisitor.getAllFunctionCallVars(value)
                 
         S_l = set().union(*[list for list in state.L])

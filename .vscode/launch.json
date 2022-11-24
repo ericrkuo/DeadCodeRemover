@@ -11,7 +11,12 @@
             "program": "${workspaceRoot}/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["./example_inputs/ifExample.py"]
+            // https://stackoverflow.com/a/51244649
+            "args": [
+                "-i", "./example_inputs/loopExample.py",
+                "-o", "./",
+                // "-e", "z", "a",
+                "-v"]
         },
         {
             "name": "ui",

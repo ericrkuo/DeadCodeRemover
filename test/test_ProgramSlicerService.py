@@ -17,6 +17,9 @@ class TestProgramSlicerService:
         assert self.state.M == expectedState.M
         assert self.state.L == expectedState.L
 
+    def assertEffectiveVars(self, expectedVars):
+        assert self.programSlicerService.effectiveVars == expectedVars
+
     # -----------------#
     # ASSIGNMENT TESTS #
     # -----------------#
@@ -452,6 +455,22 @@ class TestProgramSlicerService:
         
         self.assertState(expectedState)
 
+    def test_func_with_assign_should_differentiate_param_and_operand_vars(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        z = 5
+        y = fn(x)+z
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 6}, 'y': {4, 5, 6}, 'z': {5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
     def test_func_with_assign(self):
         code = '''
         def fn(a):
@@ -528,3 +547,59 @@ class TestProgramSlicerService:
         expectedState.M = {'x': {1, 6}, 'fn:x': {3}, 'fn2:x': {5}}
         
         self.assertState(expectedState)
+
+    def test_effectiveVars_shouldPickReturnedVars(self):
+        code = '''
+        def fn(a, b):
+            y = a
+            a += 2
+            z = y + a
+            return z
+
+        x = fn(1, 2)
+        x = fn(fn(1, 1), 1)
+        '''
+        self.init(code)
+
+        expectedEffectiveVars = set({
+            'fn:z'
+        })
+
+        self.assertEffectiveVars(expectedEffectiveVars)
+
+    def test_effectiveVars_shouldPickArgs(self):
+        code = '''
+        x = 2
+        y = 5
+
+        def fn(a, b):
+            y = a
+
+        x = fn(1, y)
+        fn(x, 2)
+        '''
+        self.init(code)
+
+        expectedEffectiveVars = set({
+            'y',
+            'x'
+        })
+
+        self.assertEffectiveVars(expectedEffectiveVars)
+
+    def test_effectiveVars_shouldPickArgsWithinFunc(self):
+        code = '''
+        def fn2(a, b):
+            z = 5
+            print(a, b)
+
+        fn2(1, fn2(1, 1))
+        '''
+        self.init(code)
+
+        expectedEffectiveVars = set({
+            'fn2:a',
+            'fn2:b'
+        })
+
+        self.assertEffectiveVars(expectedEffectiveVars)

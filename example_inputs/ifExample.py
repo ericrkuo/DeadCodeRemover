@@ -16,3 +16,5 @@ else:
 
 print('hello')
 x = y + 3
+print(z)
+print(a)

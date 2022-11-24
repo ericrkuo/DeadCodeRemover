@@ -11,6 +11,9 @@ class ProgramSliceTransformer(ast.NodeTransformer):
     
     See https://docs.python.org/3/library/ast.html#ast.NodeTransformer for more details
     '''
+    def __init__(self) -> None:
+        super().__init__()
+        self.removedLineNumbers = set()
 
     def getSlicedProgram(self, lineNumbers: set, node: ast.AST) -> ast.AST:
         '''
@@ -27,12 +30,14 @@ class ProgramSliceTransformer(ast.NodeTransformer):
     
     def visit_Assign(self, node: ast.Assign):
         if (node.lineno not in self.lineNumbers):
+            self.removedLineNumbers.add(node.lineno)
             return None
         
         return node
     
     def visit_AugAssign(self, node: ast.AugAssign):
         if (node.lineno not in self.lineNumbers):
+            self.removedLineNumbers.add(node.lineno)
             return None
         
         return node
@@ -44,6 +49,7 @@ class ProgramSliceTransformer(ast.NodeTransformer):
         orElse = result.orelse
 
         if len(body) == 0 and len(orElse) == 0:
+            self.removedLineNumbers.add(node.lineno)
             return None
         
         # empty body should just be replaced with pass, the orelse block may have important information to keep
@@ -56,6 +62,7 @@ class ProgramSliceTransformer(ast.NodeTransformer):
         result: ast.For = self.generic_visit(node)
 
         if len(result.body) == 0:
+            self.removedLineNumbers.add(node.lineno)
             return None
 
         return result
@@ -64,6 +71,7 @@ class ProgramSliceTransformer(ast.NodeTransformer):
         result: ast.For = self.generic_visit(node)
 
         if len(result.body) == 0:
+            self.removedLineNumbers.add(node.lineno)
             return None
 
         return result

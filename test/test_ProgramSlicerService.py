@@ -7,8 +7,9 @@ import ast
 class TestProgramSlicerService:
 
     def init(self, code):
+        src = dedent(code).split('\n', 1)[1]
         self.programSlicerService = ProgramSlicerService()
-        tree = ast.parse(dedent(code).split('\n', 1)[1], mode='exec')
+        tree = ast.parse(src, mode='exec')
         self.state = AbstractState()
         self.programSlicerService.slice(tree, self.state)
 

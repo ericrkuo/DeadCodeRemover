@@ -2,4 +2,5 @@
 /.idea/
 !/.idea/Project2Group12.iml
 __pycache__
+/ui/output.html
 venv

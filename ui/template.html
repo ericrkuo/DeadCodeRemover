@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/plugins/line-numbers/prism-line-numbers.css" rel="stylesheet" >
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/themes/prism-coy.min.css" rel="stylesheet"></script>
+  </head>
+  <body class="line-numbers">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <header data-plugin-header="line-numbers"></header>
+    <!-- CONTENT STARTS HERE -->
+    <nav class="navbar navbar-expand-lg bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Dead Code Removal Report</a>
+      </div>
+    </nav>
+    <div class="text-bg-light p-3">
+      <div class="alert alert-info" role="alert">
+        <h6>Inline diff of dead code removed</h6> 
+      </div>
+      <pre class="border p-2" id="display"></pre>
+    </div>
+    <div class="containertext-bg-light p-3">
+      <div class="alert alert-info" role="alert">
+        <h6>Code</h6> 
+      </div>
+      <div class="row">
+        <div class="col">
+          <h6>Code before</h6>
+        </div>
+        <div class="col">
+          <h6>Code after</h6>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <pre class="line-numbers" style="max-height: none !important;"><code class="language-python">{{originalCode}}</code></pre>
+        </div>
+        <div class="col">
+          <pre class="line-numbers" style="max-height: none !important;"><code class="language-python">{{deletedCode}}</code></pre>
+        </div>
+      </div>
+    </div>
+    <div class="lines-removed">
+      <pre> Number of lines removed: {{numberOfLinesRemoved}}</pre>
+      <pre> Lines removed: {{linesRemoved}}</pre>
+    </div>
+    <div>
+      {% for variables in variableUsedIn %}
+            <pre>Variable: {{variables}}</pre>
+            <pre>Lines (numbered from orignal code) depened on: {{varMap[variables]}}</pre>
+            <pre>Code: </pre>
+            <pre class="line-numbers" style="max-height: none !important;">
+              <code class="language-python">{{variableUsedIn[variables]}}</code>
+              </pre>
+      {% endfor %}
+    </div>
+  </body>
+</html>
+<script>
+  // https://github.com/kpdecker/jsdiff/issues/198#issuecomment-615167141
+  const style = {
+      added: 'background-color: rgb(204, 232, 204);color: green;',
+      removed: 'background-color: rgb(232, 204, 204);color: red;',
+      same: 'color: grey;'
+  };
+
+  const originalCode =  `{{originalCode}}`;
+  const deletedCode = `{{deletedCode}}`;
+  const color = '';
+
+  const diff = Diff.diffLines(originalCode, deletedCode),
+      display = document.getElementById('display'),
+      fragment = document.createDocumentFragment();
+
+  diff.forEach((part) => {
+    const codeDiffSpan = document.createElement('span');
+    codeDiffSpan.style = part.added ? style.added : part.removed ? style.removed : style.same
+    codeDiffSpan.appendChild(document
+      .createTextNode(part.value));
+    fragment.appendChild(codeDiffSpan);
+  });
+  
+  display.appendChild(fragment);
+  </script>

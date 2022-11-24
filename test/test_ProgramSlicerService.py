@@ -7,8 +7,9 @@ import ast
 class TestProgramSlicerService:
 
     def init(self, code):
+        src = dedent(code).split('\n', 1)[1]
         self.programSlicerService = ProgramSlicerService()
-        tree = ast.parse(dedent(code).split('\n', 1)[1], mode='exec')
+        tree = ast.parse(src, mode='exec')
         self.state = AbstractState()
         self.programSlicerService.slice(tree, self.state)
 
@@ -184,7 +185,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {2}, 'set': {1,2,3},
+        expectedState.M = {'x': {1,3}, 'y': {2,3}, 'set': {1,2,3},
             'var1': {1,2,3,4}, 'var2': {1,2,3,4}}
 
         self.assertState(expectedState)
@@ -199,7 +200,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'a': {1}, 'b': {1}, 'c': {1}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
+        expectedState.M = {'a': {1,4}, 'b': {1,4}, 'c': {1,4}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
 
         self.assertState(expectedState)
 
@@ -294,6 +295,7 @@ class TestProgramSlicerService:
 
         self.assertState(expectedState)
 
+
     # ---------------------#
     # AUG ASSIGNMENT TESTS #
     # ---------------------#
@@ -302,7 +304,7 @@ class TestProgramSlicerService:
         code = '''
         x = 42
         y = 0
-        y //= x + y
+        y //= x
         '''
         self.init(code)
 
@@ -320,6 +322,209 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {2,3}, 'y': {2}}
+        expectedState.M = {'x': {1,2,3}, 'y': {2}}
 
+        self.assertState(expectedState) 
+    
+    # ---------------------#
+    # LOOP STATEMENT TESTS #
+    # ---------------------#
+    
+    def test_forLoopBasic(self):
+        code = '''
+        x = 42
+        y = 2
+        z = 1
+
+        arr = [x, y, z]
+        for val in arr:
+            foo(val)
+        '''  
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6,7}}
+
+        self.assertState(expectedState)
+    
+    def test_forLoopWithRange(self):
+        code = '''
+        x = 42
+        y = 2
+
+        arr = [x, y]
+        for i in range(len(arr)):
+            if i == 0:
+                x = y
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4,5}}
+
+        self.assertState(expectedState)
+
+    
+    def test_forLoopWithTuple(self):
+        code = '''
+        x = 42
+        y = 2
+        z = 1
+
+        arr2 = [(x, y), (y, z), (x, z)]
+        for i, j in arr2:
+            print(i, j)
+            x = x + 1
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6,7}, 'j': {1,2,3,5,6,7}}
+
+        self.assertState(expectedState) 
+    
+    def test_whileLoopBasic(self):
+        code = '''
+        x = 1
+        y = 2
+        z = 1
+        while z <= 5:
+            y = y + x
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {1,2,3,5}, 'z':{3}}
+
+        self.assertState(expectedState)
+    
+    def test_whileLoopWithArray(self):
+        code = '''
+        x = 1
+        y = 2
+        i = 0
+        arr = [1, 2]
+        while i <= 5:
+          if i % 2 == 0:
+            x = x + arr[i]
+          else:
+            y = y + arr[i]
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,3,4,7}, 'y': {2,3,4,9}, 'i':{3}, 'arr': {4}}
+
+        self.assertState(expectedState)
+
+    # -----------#
+    # FUNC TESTS #
+    # -----------#
+
+    def test_func_no_assign_with_side_effect(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        fn(x)
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
+    def test_func_with_assign_should_differentiate_param_and_operand_vars(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        z = 5
+        y = fn(x)+z
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 6}, 'y': {4, 5, 6}, 'z': {5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
+    def test_func_with_assign(self):
+        code = '''
+        def fn(a):
+            x = 2
+            return a + x
+        x = 3
+        y = fn(x)
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {4, 5}, 'y': {4, 5}, 'fn:x': {2}, }
+        
+        self.assertState(expectedState)
+
+    def test_func_same_varname_should_not_conflict(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        y = fn(0)
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {4}, 'fn:x': {3}, }
+        
+        self.assertState(expectedState)
+
+    def test_nested_func_calls_with_assign(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        def fn2(a):
+            x = 2
+        y = fn(fn2(0))
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {6}, 'fn:x': {3}, 'fn2:x': {5}}
+        
+        self.assertState(expectedState)
+
+    def test_nested_func_calls_no_assign(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        def fn2(a):
+            x = 2
+        fn(fn2(0))
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'fn:x': {3}, 'fn2:x': {5}}
+        
+        self.assertState(expectedState)
+
+    def test_nested_func_calls_no_assign_side_effect(self):
+        code = '''
+        x = 3
+        def fn(a):
+            x = 2
+        def fn2(a):
+            x = 2
+        fn(fn2(x))
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1, 6}, 'fn:x': {3}, 'fn2:x': {5}}
+        
         self.assertState(expectedState)

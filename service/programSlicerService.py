@@ -15,13 +15,92 @@ class ProgramSlicerService:
                 self.slice(child, state)
 
         elif type(node) is ast.Assign:
-              self.analyzeAssign(state, node)
+            self.analyzeAssign(state, node)
 
         elif type(node) is ast.AugAssign:
-              self.analyzeAugAssign(state, node)     
+            self.analyzeAugAssign(state, node)
 
         elif type(node) is ast.If:
             self.analyzeIf(state, node)
+
+        elif type(node) is ast.FunctionDef:
+            self.analyzeFunctionDef(state, node)
+
+        elif type(node) is ast.Expr:
+            self.slice(node.value, state)
+
+        elif type(node) is ast.Call:
+            self.analyzeCall(state, node)
+        
+        elif type(node) is ast.For:
+            self.analyzeFor(state, node)
+        
+        elif type(node) is ast.While:
+            self.analyzeWhile(state, node)
+            
+    def analyzeWhile(self, state: AbstractState, statement: ast.While):
+        varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
+
+        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
+        state.L.append(curr_L)
+        
+        preState = state.copy()
+        for node in statement.body:
+            self.slice(node, state)
+        while preState != state:
+            # Union the resulting states
+            unionVars = set().union(state.M.keys(), preState.M.keys())
+            for var in unionVars:
+                state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+            for var in varsInCondition:
+                state.L[-1].union(state.M.get(var, {}))
+          
+            preState = state.copy()
+            for node in statement.body:
+              self.slice(node, state)
+        
+        state.L.pop()
+
+    
+    def analyzeFor(self, state: AbstractState, statement: ast.For):
+        '''
+        Handle program slicing for an for loop statement.
+
+        Algorithm:
+
+        1. Update the mapping of target variables in for loop
+        1. Update the L stack with the mapping of the current varibales in the loop condition
+        2. Run program slicing across the then block `ast.For::body`
+        4. Continue slicing until the current state is the same as the previous one
+        5. Pop the L stack
+        '''
+        # update the mapping of target variables in for loop
+        targetVars = self.astVisitor.getAllReferencedVariables(statement.target)
+        for var in targetVars:
+            self.updateState(state, var, statement.iter, statement.lineno)
+        # update state.L
+        iterVars = self.astVisitor.getAllReferencedVariables(statement.iter)
+        curr_L = set().union(*[state.M.get(var, {}) for var in iterVars]).union(*[state.M.get(var, {}) for var in targetVars])
+        state.L.append(curr_L)
+        
+        # continue slicing until the current state is the same as the previous one
+        preState = state.copy()
+        for node in statement.body:
+            self.slice(node, state)
+        while preState != state:
+            # Union the resulting states
+            unionVars = set().union(state.M.keys(), preState.M.keys())
+            for var in unionVars:
+                state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+            for var in targetVars.union(iterVars):
+                state.L[-1].union(state.M.get(var, {}))
+            
+
+            preState = state.copy()
+            for node in statement.body:
+                self.slice(node, state)
+        
+        state.L.pop()
         
     def analyzeIf(self, state: AbstractState, statement: ast.If):
         '''
@@ -55,6 +134,30 @@ class ProgramSlicerService:
         for var in unionVars:
             state.M[var] = set().union(bodyState.M.get(var, {}), orElseState.M.get(var, {}))
         state.L.pop()
+
+    def analyzeFunctionDef(self, state: AbstractState, statement: ast.FunctionDef):
+        '''If come across a function definition, we set `AbstractState::funName` and continue slicing. The function name will be used as a prefix inside the map M'''
+        currentName = state.funcName
+        state.funcName = statement.name
+
+        for node in statement.body:
+            self.slice(node, state)
+
+        state.funcName = currentName
+
+    def analyzeCall(self, state: AbstractState, statement: ast.Call):
+        '''
+        Handles function calls without assignment; eg, handles `fn()` but not `x = fn()`
+        In case parameters are mutated within the function, we pesmistically assume
+        that all variables referenced in the call depends on the line number of the function call; 
+        ie, given x -> {1, 2} and `fn(x)` on line 4
+        now, x -> {1, 2, 4}
+        '''
+        n = statement.lineno
+        vars = self.astVisitor.getAllReferencedVariables(statement)
+        for var in vars:
+            varName = convertVarname(var, state.funcName)
+            state.M[varName] = set().union(state.M.get(varName, {}), {n})
 
     def analyzeAssign(self, state: AbstractState, statement: ast.Assign):
         '''
@@ -123,15 +226,16 @@ class ProgramSlicerService:
         n = statement.lineno
 
         target = statement.target
-        value = statement.value
 
+        # NOTE: we pass in statement rather than statement.value because in an augmented assignment
+        # x += y is x = x + y, so actually, we need to union with M[y] AND M[x]
         if type(target) is ast.Name:
-            self.updateState(state, target.id, value, n)
+            self.updateState(state, target.id, statement, n)
         
         # Handle cases like a[2] += 2
         elif type(target) is ast.Subscript:
             tNode: ast.Name = target.value
-            self.updateState(state, tNode.id, value, n)
+            self.updateState(state, tNode.id, statement, n)
 
         else:
             raise Exception(f'Unexpected error: encountered unsupported target in an augmented assignment call {target}')
@@ -145,6 +249,16 @@ class ProgramSlicerService:
             n: the line number of the statement
         '''
         varsRead = self.astVisitor.getAllReferencedVariables(value)
+        funcCallVars = self.astVisitor.getAllFunctionCallVars(value)
+                
         S_l = set().union(*[list for list in state.L])
-        S_e = set().union(*[state.M.get(var, {}) for var in varsRead])
-        state.M[targetVariable] = set().union({n}, S_e, S_l)
+        S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
+        state.M[convertVarname(targetVariable, state.funcName)] = set().union({n}, S_e, S_l)
+        
+        # if RHS has a function call, we explore the function as the function is not dead
+        for funcCallVar in funcCallVars:
+            varName = convertVarname(funcCallVar, state.funcName)
+            state.M[varName] = set().union(state.M.get(varName, {}), {n})
+
+def convertVarname(name: str, funcName: str):
+    return f'{funcName}:{name}' if funcName else name

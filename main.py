@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import os
 import sys
 import ast
 import argparse
@@ -21,13 +22,24 @@ class DependentStat:
     variables: set
     source: str
 
+def file_path(string):
+    if os.path.isfile(string):
+        return string
+    else:
+        raise argparse.ArgumentTypeError(f"'{string}' is not a valid path to a python file")
+
+def dir_path(string):
+    if os.path.isdir(string):
+        return string
+    else:
+        raise argparse.ArgumentTypeError(f"'{string}' is not a valid path to a directory")
+
 def configureArgParser():
     argParser = argparse.ArgumentParser(description='List options')
-    argParser.add_argument('-i', '--input', metavar='input', type=str, help='Path to input file', required=True)
-    argParser.add_argument('-o', '--output', metavar='output', type=str, help='Path to output file', required=True)
-    argParser.add_argument('-e', '--effective-vars', action='store', nargs='*', metavar='effective variables', type=str, help='List of effective variables to analyze; if omitted, target effective variables are found automatically.')
+    argParser.add_argument('-i', '--input', metavar='input', type=file_path, help='Path to input file', required=True)
+    argParser.add_argument('-o', '--output', metavar='output', type=dir_path, help='Path to output directory', required=True)
+    argParser.add_argument('-e', '--effective-vars', action='store', nargs='*', metavar='effective variables', type=str, help='Space-separated list of effective variables to analyze in the form of <function name>:<variable name> or <variable name>; if omitted, target effective variables are found automatically.')
     argParser.add_argument('-v', '--verbose', action='store_true', help='Keep all unused functions if True')
-
     
     return argParser
 
@@ -44,14 +56,16 @@ if __name__ == "__main__":
     state = AbstractState()
     programSlicerService = ProgramSlicerService()
     programSlicerService.slice(tree, state)
-    print(f'Abstract state after program slicing:\n{str(state)}')
-    print(f'effective vars = {programSlicerService.effectiveVars}')
+    print(f'Abstract state after program slicing:\n{str(state)}\n')
 
-    # TODO integrate with earlier pipelines - getting effective vars
-    # TODO integrate with later pipelines - Jin UI
+    if args.effective_vars and len(args.effective_vars):
+        effectiveVariables = args.effective_vars
+    else:
+        effectiveVariables = programSlicerService.effectiveVars
+    print(f'effective vars = {effectiveVariables}\n')
+
     print(f'ORIGINAL CODE\n')
     print(src + '\n')
-    effectiveVariables = list(state.M.keys())[:4]
     
     effectiveLineNumbers = set().union(*[state.M[var] for var in effectiveVariables])
     print(effectiveLineNumbers)
@@ -75,3 +89,5 @@ if __name__ == "__main__":
     print('removed line numbers: ', programSliceTransformer.removedLineNumbers)
     print(f'SLICED PROGRAM for variable {effectiveVariables} \n')
     print(ast.unparse(tree) + '\n')
+
+    # TODO integrate with later pipelines - Jin UI

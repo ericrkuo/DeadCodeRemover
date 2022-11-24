@@ -7,3 +7,5 @@ while i <= 5:
     x = x + arr[i]
   else:
     y = y + arr[i]
+
+print(x)

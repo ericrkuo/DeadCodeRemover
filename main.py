@@ -1,9 +1,24 @@
+from dataclasses import dataclass
 import sys
 import ast
+from typing import Dict
 from model.abstractState import AbstractState
 from service.programSlicerService import ProgramSlicerService
 from visitor.lineNumberVisitor import LineNumberVisitor
 from visitor.programSliceTransformer import ProgramSliceTransformer
+
+
+@dataclass
+class DependentStat:
+    '''
+    Represent a dependency statistic
+    - `numDependencies` represents how many variables are dependent on the current line
+    - `variables` shows the variables
+    - `source` represents the source code at that line number
+    '''
+    numDependencies: int
+    variables: set
+    source: str
 
 if __name__ == "__main__":
     args = sys.argv[1:]
@@ -19,7 +34,8 @@ if __name__ == "__main__":
     programSlicerService.slice(tree, state)
     print(f'Abstract state after program slicing:\n{str(state)}\n')
 
-    # TODO integrate with earlier pipelines - getting effective vars and resulting lines to keep from merged slices
+    # TODO integrate with earlier pipelines - getting effective vars
+    # TODO integrate with later pipelines - Jin UI
     print(f'ORIGINAL CODE\n')
     print(src + '\n')
     effectiveVariables = list(state.M.keys())[:4]
@@ -29,16 +45,17 @@ if __name__ == "__main__":
     # find most dependented line numbers
     lineNumberVisitor = LineNumberVisitor(src)
     segment = lineNumberVisitor.getNodeWithLineNumber(tree)
-    # print('segment:', segment)
-    dependMap = dict()
+    dependMap: Dict[int, DependentStat] = dict()
     for key, lineNums in state.M.items():
-        for ln in lineNums:
-            currDepend, varSet, srcSeg = dependMap.get(ln, (0, set(), segment[ln]))
-            varSet.add(key)
-            dependMap[ln] = (currDepend + 1, varSet, srcSeg)
-    # print(dependMap)
-    dependList = sorted([(key, value[0], value[1], value[2]) for key, value in dependMap.items()], key=lambda x: x[1])
-    print(dependList)
+        for n in lineNums:
+            # TODO remove "N/A" once we fix mapping of line number to source code
+            stat = dependMap.get(n, DependentStat(0, set(), segment.get(n, "N/A")))
+            stat.variables.add(key)
+            stat.numDependencies += 1
+            dependMap[n] = stat
+
+    dependMap = {k: v for k, v in sorted(dependMap.items(), key=lambda item: item[1].numDependencies)}
+    print("\n".join("  {}\t{}".format(k, v) for k, v in dependMap.items()))
     
     programSliceTransformer = ProgramSliceTransformer()
     tree = programSliceTransformer.getSlicedProgram(effectiveLineNumbers, tree)

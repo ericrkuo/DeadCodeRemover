@@ -29,6 +29,7 @@ if __name__ == "__main__":
     # find most dependented line numbers
     lineNumberVisitor = LineNumberVisitor(src)
     segment = lineNumberVisitor.getNodeWithLineNumber(tree)
+    # print('segment:', segment)
     dependMap = dict()
     for key, lineNums in state.M.items():
         for ln in lineNums:
@@ -37,9 +38,10 @@ if __name__ == "__main__":
             dependMap[ln] = (currDepend + 1, varSet, srcSeg)
     # print(dependMap)
     dependList = sorted([(key, value[0], value[1], value[2]) for key, value in dependMap.items()], key=lambda x: x[1])
-    # print(dependList)
+    print(dependList)
     
     programSliceTransformer = ProgramSliceTransformer()
     tree = programSliceTransformer.getSlicedProgram(effectiveLineNumbers, tree)
+    print('removed line numbers: ', programSliceTransformer.removedLineNumbers)
     print(f'SLICED PROGRAM for variable {effectiveVariables} \n')
     print(ast.unparse(tree) + '\n')

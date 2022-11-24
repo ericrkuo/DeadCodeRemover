@@ -10,12 +10,6 @@ class ProgramSlicerService:
         self.source = src
 
     def slice(self, node: ast.AST, state: AbstractState):
-        # get the source string per line
-        srcSegment = ast.get_source_segment(self.source, node)
-        if srcSegment:
-            # print(node.lineno, srcSegment)
-            state.segment[node.lineno] = srcSegment
-      
         '''Run program slicing starting from the given `node`. Modify `state` in place, which is why the method has no return value'''
         if type(node) is ast.Module:
             for child in node.body:

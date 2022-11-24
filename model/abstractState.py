@@ -14,8 +14,6 @@ class AbstractState:
 
         self.L = deque()
         '''L is a list of sets of integers'''
-        
-        self.segment = dict()
 
     def __str__(self):
         prettyM = "\n".join("  {}\t{}".format(k, v) for k, v in self.M.items())

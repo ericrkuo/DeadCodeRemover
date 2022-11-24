@@ -30,7 +30,7 @@ if __name__ == "__main__":
         tree = ast.parse(src, mode='exec')
 
     state = AbstractState()
-    programSlicerService = ProgramSlicerService(src)
+    programSlicerService = ProgramSlicerService()
     programSlicerService.slice(tree, state)
     print(f'Abstract state after program slicing:\n{str(state)}\n')
 

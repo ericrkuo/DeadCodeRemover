@@ -5,9 +5,8 @@ from visitor.astVisitor import ASTVisitor
 
 class ProgramSlicerService:
 
-    def __init__(self, src: str):
+    def __init__(self):
         self.astVisitor = ASTVisitor()
-        self.source = src
 
     def slice(self, node: ast.AST, state: AbstractState):
         '''Run program slicing starting from the given `node`. Modify `state` in place, which is why the method has no return value'''

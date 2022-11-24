@@ -12,6 +12,14 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": ["./example_inputs/ifExample.py"]
+        },
+        {
+            "name": "ui",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/ui/generateReport.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
         }
     ]
 }

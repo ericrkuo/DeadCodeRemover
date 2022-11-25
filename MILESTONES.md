@@ -31,7 +31,7 @@ In summary, what we have left to do is
 - Continue documenting our project in our README
 
 ## Feedback from TA
-We showed Jifeng a demo of what we have so far, namely the genereated HTML report. His main feedback to us was to focus on selling project idea in our presentation. This could include talking about convincing use cases, the ssefulness for programmers in the real world, any convincing statements, and to talk about design choices such as how it's control sensisitve.
+We showed Jifeng a demo of what we have so far, namely the genereated HTML report. His main feedback to us was to focus on selling project idea in our presentation. This could include talking about convincing use cases, the usefulness for programmers in the real world, any convincing statements, and to talk about design choices such as how it's control sensisitve.
 
 # Milestone 4
 Full details can be found at [Milestone 4](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.baebxgea595b)

@@ -26,6 +26,7 @@ class AbstractState:
         copy = AbstractState()
         copy.M = self.M.copy()
         copy.L = self.L.copy()
+        copy.funcName = self.funcName
         return copy
     
     def __eq__(self, other: AbstractState):

@@ -90,22 +90,21 @@ class ProgramSlicerService:
         curr_L = set().union(*[state.M.get(var, {}) for var in iterVars]).union(*[state.M.get(var, {}) for var in targetVars])
         state.L.append(curr_L)
         
-        # continue slicing until the current state is the same as the previous one
-        preState = state.copy()
-        for node in statement.body:
-            self.slice(node, state)
+        # continue slicing until the current state UNIONED with the previous state is the same as the previous state
+        # The analysis will terminate as long as we don't remove any line numbers in the mapping
+        preState = AbstractState()
+
         while preState != state:
+            preState = state.copy()
+            for node in statement.body:
+                self.slice(node, state)
+
             # Union the resulting states
             unionVars = set().union(state.M.keys(), preState.M.keys())
             for var in unionVars:
                 state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
             for var in targetVars.union(iterVars):
                 state.L[-1].union(state.M.get(var, {}))
-            
-
-            preState = state.copy()
-            for node in statement.body:
-                self.slice(node, state)
         
         state.L.pop()
         

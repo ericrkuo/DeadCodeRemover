@@ -38,7 +38,7 @@
       </div>
     </nav>
     <div class="text-bg-light p-3">
-      <div>This is a dead code removal report generated for file 'args.input'' with effective variables {'z', 'a'}</div>
+      <div>This is a dead code removal report generated for file 'ifExample.py' with effective variables {'a', 'z'}</div>
       <br/>
       <div class="alert alert-info" role="alert">
         <h5>Inline diff of dead code removed</h5> 
@@ -126,50 +126,57 @@ print(a)</code></pre>
         <div class="row">
           <div class="col">4</div>
           <div class="col">2</div>
-          <div class="col">{'z', 'a', 'y', 'x'}</div>
+          <div class="col">{'a', 'x', 'y', 'z'}</div>
           <div class="col">y = 2</div>
         </div>
         
         <div class="row">
           <div class="col">4</div>
           <div class="col">1</div>
-          <div class="col">{'z', 'a', 'y', 'x'}</div>
+          <div class="col">{'a', 'x', 'y', 'z'}</div>
           <div class="col">x = 42</div>
         </div>
         
         <div class="row">
           <div class="col">3</div>
           <div class="col">4</div>
-          <div class="col">{'z', 'y', 'x'}</div>
+          <div class="col">{'x', 'y', 'z'}</div>
           <div class="col">z = x if y > 0 else z</div>
         </div>
         
         <div class="row">
           <div class="col">3</div>
           <div class="col">3</div>
-          <div class="col">{'z', 'y', 'x'}</div>
+          <div class="col">{'x', 'y', 'z'}</div>
           <div class="col">z = 1</div>
         </div>
         
         <div class="row">
           <div class="col">2</div>
           <div class="col">13</div>
-          <div class="col">{'y', 'x'}</div>
+          <div class="col">{'x', 'y'}</div>
           <div class="col">y = 1</div>
         </div>
         
         <div class="row">
           <div class="col">2</div>
           <div class="col">8</div>
-          <div class="col">{'y', 'x'}</div>
+          <div class="col">{'x', 'y'}</div>
           <div class="col">y = x + 3</div>
         </div>
         
         <div class="row">
           <div class="col">2</div>
           <div class="col">6</div>
-          <div class="col">{'y', 'x'}</div>
+          <div class="col">{'x', 'y'}</div>
           <div class="col">y = x + 3</div>
+        </div>
+        
+        <div class="row">
+          <div class="col">1</div>
+          <div class="col">16</div>
+          <div class="col">{'z'}</div>
+          <div class="col">print(z)</div>
         </div>
         
         <div class="row">
@@ -193,13 +200,6 @@ print(a)</code></pre>
           <div class="col">a = 2</div>
         </div>
         
-        <div class="row">
-          <div class="col">1</div>
-          <div class="col">16</div>
-          <div class="col">{'z'}</div>
-          <div class="col">print(z)</div>
-        </div>
-        
       </div>
 
     </div>
@@ -210,24 +210,6 @@ print(a)</code></pre>
       <div>For each effective variable, shows their program slice and the lines that they depend on.</div>
       <br/>
       <div>
-        
-        <div class="alert alert-warning" role="alert">
-          Effective variable: z
-        </div>
-        <pre>Lines dependent on (numbered from orignal code): {16, 1, 2, 3, 4}</pre>
-        <pre>Code: </pre>
-        <pre class="line-numbers" style="max-height: none !important;">
-          <code class="language-python">x = 42
-y = 2
-z = 1
-z = x if y > 0 else z
-if x != y:
-    if z > 0:
-        print('hello')
-print('hello')
-print(z)
-print(a)</code>
-        </pre>
         
         <div class="alert alert-warning" role="alert">
           Effective variable: a
@@ -242,6 +224,24 @@ if x != y:
         print('hello')
 elif x > 0:
     a = 2
+print('hello')
+print(z)
+print(a)</code>
+        </pre>
+        
+        <div class="alert alert-warning" role="alert">
+          Effective variable: z
+        </div>
+        <pre>Lines dependent on (numbered from orignal code): {16, 1, 2, 3, 4}</pre>
+        <pre>Code: </pre>
+        <pre class="line-numbers" style="max-height: none !important;">
+          <code class="language-python">x = 42
+y = 2
+z = 1
+z = x if y > 0 else z
+if x != y:
+    if z > 0:
+        print('hello')
 print('hello')
 print(z)
 print(a)</code>

@@ -119,7 +119,7 @@ if __name__ == "__main__":
         ratioLinesRemoved = ratioLinesRemoved,
         dependMap = dependMap,
         effectiveVariables = effectiveVariables,
-        fileName = os.path.basename('args.input'))
+        fileName = os.path.basename(args.input))
 
     # Debug mode
     if args.debug:

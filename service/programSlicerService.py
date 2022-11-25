@@ -6,7 +6,7 @@ from visitor.astVisitor import ASTVisitor
 class ProgramSlicerService:
 
     def __init__(self):
-        self.effectiveVars: Set(str) = set()
+        self.effectiveVars: set(str) = set()
         self.astVisitor = ASTVisitor()
 
     def slice(self, node: ast.AST, state: AbstractState):

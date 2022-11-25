@@ -13,10 +13,11 @@
             "justMyCode": true,
             // https://stackoverflow.com/a/51244649
             "args": [
-                "-i", "./example_inputs/loopExample.py",
+                "-i", "./example_inputs/ifExample.py",
                 "-o", "./",
                 // "-e", "z", "a",
-                "-v"]
+                "-v",
+                "-d"]
         },
         {
             "name": "ui",

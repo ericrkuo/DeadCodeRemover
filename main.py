@@ -74,7 +74,7 @@ if __name__ == "__main__":
     else:
         effectiveVariables = programSlicerService.effectiveVars
     
-    effectiveLineNumbers = set().union(*[state.M[var] for var in effectiveVariables])
+    effectiveLineNumbers = set().union(*[state.M.get(var, {}) for var in effectiveVariables])
 
     # Find the most dependented line numbers
     segment = lineNumberVisitor.getNodeWithLineNumber(tree)
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     for effectiveVar in effectiveVariables:
         tempTree = ast.parse(src, mode='exec')
-        tempLines = state.M[effectiveVar]
+        tempLines = state.M.get(effectiveVar, set())
         tempTree = programSliceTransformer.getSlicedProgram(tempLines, tempTree)
         tempSrc = ast.unparse(tempTree)
         effectiveVariableMap[effectiveVar] = tempSrc

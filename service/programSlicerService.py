@@ -51,20 +51,19 @@ class ProgramSlicerService:
         curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
         state.L.append(curr_L)
         
-        preState = state.copy()
-        for node in statement.body:
-            self.slice(node, state)
+        preState = AbstractState()
+        
         while preState != state:
+            preState = state.copy()
+            for node in statement.body:
+              self.slice(node, state)
+          
             # Union the resulting states
             unionVars = set().union(state.M.keys(), preState.M.keys())
             for var in unionVars:
                 state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
             for var in varsInCondition:
                 state.L[-1].union(state.M.get(var, {}))
-          
-            preState = state.copy()
-            for node in statement.body:
-              self.slice(node, state)
         
         state.L.pop()
 

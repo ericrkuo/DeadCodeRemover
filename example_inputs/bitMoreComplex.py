@@ -6,9 +6,9 @@ i=5
 m=i
 f=m
 print("Enter three numbers")
-A = getNextIntFromConsole()
-B = getNextIntFromConsole()
-C = getNextIntFromConsole()
+A = int(input('Enter 1st number: '))
+B = int(input('Enter 2nd number: '))
+C = int(input('Enter 3rd number: '))
 
 for s in range(5):
   m = m + 2

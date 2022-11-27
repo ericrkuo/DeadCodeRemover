@@ -13,10 +13,11 @@
             "justMyCode": true,
             // https://stackoverflow.com/a/51244649
             "args": [
-                "-i", "./example_inputs/loopExample.py",
+                // "-i", "./example_inputs/bitMoreComplex.py",
+                "-i", "./example_inputs/bfs2.py",
                 "-o", "./",
-                // "-e", "z", "a",
-                "-v"]
+                // "-e", "sum", "avg", "min", "max",
+                "-d"]
         },
         {
             "name": "ui",
@@ -25,6 +26,20 @@
             "program": "${workspaceRoot}/ui/generateReport.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-        }
+        },
+        {
+            "name": "example_image_uploader.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            // https://stackoverflow.com/a/51244649
+            "args": [
+                "-i", "./example_inputs/example_image_uploader.py",
+                "-o", "./",
+                "-e", "upload_image:img", "upload_image:request", "upload_image:images",
+                "-d"]
+        },
     ]
 }

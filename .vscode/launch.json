@@ -13,9 +13,10 @@
             "justMyCode": true,
             // https://stackoverflow.com/a/51244649
             "args": [
-                "-i", "./example_inputs/ifExample.py",
+                // "-i", "./example_inputs/bitMoreComplex.py",
+                "-i", "./example_inputs/bfs2.py",
                 "-o", "./",
-                // "-e", "z", "a",
+                // "-e", "sum", "avg", "min", "max",
                 "-v",
                 "-d"]
         },

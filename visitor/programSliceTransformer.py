@@ -1,5 +1,5 @@
 import ast
-from model.abstractState import AbstractState
+from visitor.functionDeclarationVisitor import FunctionDeclarationVisitor
 
 class ProgramSliceTransformer(ast.NodeTransformer):
     '''
@@ -14,6 +14,8 @@ class ProgramSliceTransformer(ast.NodeTransformer):
     def __init__(self) -> None:
         super().__init__()
         self.removedLineNumbers = set()
+        self.functionDeclarationVisitor = FunctionDeclarationVisitor()
+        self.context = []
 
     def getSlicedProgram(self, lineNumbers: set, node: ast.AST) -> ast.AST:
         '''
@@ -21,26 +23,68 @@ class ProgramSliceTransformer(ast.NodeTransformer):
 
         However, certain control flow statements like ifs, for loops, while loops are handled differently.
 
-        Furthermore, imports, return statements, function calls, function declarations will all be kept.
+        Function calls will only be kept for user defined functions.
+
+        Furthermore, imports, return statements, function declarations will all be kept.
         '''
 
         self.lineNumbers = lineNumbers
+        self.functionNames = self.functionDeclarationVisitor.getAllFunctionDefinitionNames(node)
 
         return self.generic_visit(node)
     
     def visit_Assign(self, node: ast.Assign):
-        if (node.lineno not in self.lineNumbers):
+        if node.lineno not in self.lineNumbers:
             self.removedLineNumbers.add(node.lineno)
             return None
         
         return node
     
     def visit_AugAssign(self, node: ast.AugAssign):
-        if (node.lineno not in self.lineNumbers):
+        if node.lineno not in self.lineNumbers:
             self.removedLineNumbers.add(node.lineno)
             return None
         
         return node
+
+    def visit_Expr(self, node: ast.Expr):
+        self.context.append('expr')
+        t = self.generic_visit(node)
+        self.context.pop()
+
+        if not hasattr(t, 'value'):
+            return None
+
+        return node
+
+    def visit_Call(self, node: ast.Call):
+        if (len(self.context) == 0 or self.context[-1] != 'expr'):
+            return node
+
+        # keep user defined function calls
+        if node.lineno in self.lineNumbers:
+            return node
+
+        # if ANY function calls inside this node reference a user defined function, keep it
+        # e.g. if foo is a user defined function, print(foo(arr)) and foo(len(arr)) should be kept
+
+        if type(node.func) is ast.Name and node.func.id in self.functionNames:
+            return node
+
+        for arg in node.args:
+            if type(arg) is ast.Call:
+                t = self.visit_Call(arg)
+                if t:
+                    return node
+
+        for keyword in node.keywords:
+            if type(keyword.value) is ast.Call:
+                t = self.visit_Call(arg)
+                if t:
+                    return node
+        
+        self.removedLineNumbers.add(node.lineno)
+        return None
 
     def visit_If(self, node: ast.If):
         result: ast.If = self.generic_visit(node)

@@ -8,8 +8,8 @@ class TestProgramSlicerService:
 
     def init(self, code):
         src = dedent(code).split('\n', 1)[1]
-        self.programSlicerService = ProgramSlicerService()
         tree = ast.parse(src, mode='exec')
+        self.programSlicerService = ProgramSlicerService(tree)
         self.state = AbstractState()
         self.programSlicerService.slice(tree, self.state)
 
@@ -129,7 +129,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {2}, 'a': {1,2,4}}
+        expectedState.M = {'x': {1}, 'y': {2}, 'a': {1,2,3,4}}
 
         self.assertState(expectedState)
 
@@ -188,7 +188,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,3}, 'y': {2,3}, 'set': {1,2,3},
+        expectedState.M = {'x': {1}, 'y': {2}, 'set': {1,2,3},
             'var1': {1,2,3,4}, 'var2': {1,2,3,4}}
 
         self.assertState(expectedState)
@@ -203,7 +203,36 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
+        expectedState.M = {'a': {1}, 'b': {1}, 'c': {1}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
+
+        self.assertState(expectedState)
+
+    def test_assignFunctionCallsWithFunctionDefinition(self):
+        code = '''
+        a,b,c = 0,0,0
+        y=0
+        z=1
+        x = foo(a,foo(b,c)) + [y,[z]]
+
+        def foo(): print('hello')
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
         expectedState.M = {'a': {1,4}, 'b': {1,4}, 'c': {1,4}, 'y': {2}, 'z': {3}, 'x': {1,2,3,4}}
+
+        self.assertState(expectedState)
+
+    def test_assignmentWithAttributeFunctionCall(self):
+        code = '''
+        a=0
+        que = deque()
+        x = que.pop(a)
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'a':{1}, 'x': {1,2,3}, 'que': {2,3}}
 
         self.assertState(expectedState)
 
@@ -225,6 +254,42 @@ class TestProgramSlicerService:
 
         expectedState = AbstractState()
         expectedState.M = {'x': {1}, 'y': {2}, 'b': {1,2,3,7}, 'a': {1,2,3,5}}
+
+        self.assertState(expectedState)
+
+    def test_basicifInsideFunction(self):
+        code = '''
+        def foo():
+            x = 42
+            y = 10
+            b = 3
+            if (x>y):
+                a = b
+            else:
+                b = x    
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'foo:x': {2}, 'foo:y': {3}, 'foo:b': {2,3,4,8}, 'foo:a': {2,3,4,6}}
+
+        self.assertState(expectedState)
+
+    def test_basicifWithObjectAttributes(self):
+        code = '''
+        x = 42
+        y = 10
+        c = 2
+        if (x>y):
+            obj.foo()
+        else:
+            obj.moo([{c}])
+        # obj should depend on x and y from conditional, and c since it was parameter
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {2}, 'c': {3}, 'obj': {1,2,3,5,7}}
 
         self.assertState(expectedState)
 
@@ -346,7 +411,42 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6,7}}
+        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5}, 'val': {1,2,3,5,6}}
+
+        self.assertState(expectedState)
+    
+    def test_forLoopBasicConditionedOnObjectAttributeFunctionCall(self):
+        code = '''
+        x = 42
+        y = 2
+        z = 1
+
+        arr = [x, y, z]
+        for val in arr.foo():
+            foo(val)
+        '''  
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1}, 'y': {2}, 'z': {3}, 'arr': {1,2,3,5,6}, 'val': {1,2,3,5,6}}
+
+        self.assertState(expectedState)
+    
+    def test_forLoopBasicInsideFunctionDefinition(self):
+        code = '''
+        def foo():
+            x = 42
+            y = 2
+            z = 1
+
+            arr = [x, y, z]
+            for val in arr:
+                foo(val)
+        '''  
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'foo:x': {2}, 'foo:y': {3}, 'foo:z': {4}, 'foo:arr': {2,3,4,6}, 'foo:val': {2,3,4,6,7,8}}
 
         self.assertState(expectedState)
     
@@ -363,7 +463,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4,5}}
+        expectedState.M = {'x': {1,2,4,5,7}, 'y': {2}, 'i': {1,2,4,5}, 'arr': {1,2,4}}
 
         self.assertState(expectedState)
 
@@ -382,7 +482,7 @@ class TestProgramSlicerService:
         self.init(code)
 
         expectedState = AbstractState()
-        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6,7}, 'j': {1,2,3,5,6,7}}
+        expectedState.M = {'x': {1,2,3,5,6,8}, 'y': {2}, 'z':{3}, 'arr2': {1,2,3,5}, 'i': {1,2,3,5,6}, 'j': {1,2,3,5,6}}
 
         self.assertState(expectedState) 
     
@@ -398,6 +498,53 @@ class TestProgramSlicerService:
 
         expectedState = AbstractState()
         expectedState.M = {'x': {1}, 'y': {1,2,3,5}, 'z':{3}}
+
+        self.assertState(expectedState)
+    
+    def test_whileLoopInsideFunctionDefinition(self):
+        code = '''
+        def foo():
+            x = 1
+            y = 2
+            z = 1
+            while z <= 5:
+                y = y + x
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'foo:x': {2}, 'foo:y': {2,3,4,6}, 'foo:z':{4}}
+
+        self.assertState(expectedState)   
+    
+    def test_whileLoopBasicAttributeFuncCall(self):
+        code = '''
+        que = deque()
+        while que.size() > 0:
+            y = 1
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'que': {1}, 'y': {1,3}}
+
+        self.assertState(expectedState) 
+    
+    def test_whileLoopInsideFunctionDefinitionAndSlicingIteratesMoreThanOnce(self):
+        code = '''
+        def foo():
+            x = 1
+            y = 2
+            z = 1
+            while z <= 5:
+                y = y + x
+                x += y + 1
+                z += 1
+        ''' 
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'foo:x': {2,3,4,6,7,8}, 'foo:y': {2,3,4,6,7,8}, 'foo:z':{4,8}}
 
         self.assertState(expectedState)
     
@@ -566,40 +713,140 @@ class TestProgramSlicerService:
         })
 
         self.assertEffectiveVars(expectedEffectiveVars)
-
-    def test_effectiveVars_shouldPickArgs(self):
+    
+    def test_shouldOnlyConsiderVariablesReferencedInUserDefinedFunctionCalls(self):
         code = '''
-        x = 2
-        y = 5
+        fn(a)
+        fn2(b)
+        fn(fn2(c))
+        print(fn2(d))
+        fn2(len(f), e)
 
-        def fn(a, b):
-            y = a
+        # should ignore these
+        fn2(len(f))
+        len(f)
+        range(f)
+        print(f)
+        externalMethod(f)
 
-        x = fn(1, y)
-        fn(x, 2)
+        def fn(a):
+            print('hello')
+
+        def fn2(a):
+            print('hello')
         '''
         self.init(code)
 
-        expectedEffectiveVars = set({
-            'y',
-            'x'
-        })
-
-        self.assertEffectiveVars(expectedEffectiveVars)
-
-    def test_effectiveVars_shouldPickArgsWithinFunc(self):
+        expectedState = AbstractState()
+        expectedState.M = {'a': {1}, 'b': {2}, 'c': {3}, 'd':{4}, 'e':{5}}
+        
+        self.assertState(expectedState)
+    
+    def test_shouldConsiderObjectsForAttributeFunctioncalls(self):
         code = '''
-        def fn2(a, b):
-            z = 5
-            print(a, b)
+        a.foo(x)
+        obj.foo(b.foo(0))
+        
+        print(obj2.foo(obj))
 
-        fn2(1, fn2(1, 1))
+        def foo(): print('hello')
         '''
         self.init(code)
 
-        expectedEffectiveVars = set({
-            'fn2:a',
-            'fn2:b'
-        })
+        expectedState = AbstractState()
+        expectedState.M = {'a': {1}, 'b': {2}, 'obj': {2},'obj2': {2,4}}
+        
+        self.assertState(expectedState)
+    
+    def test_variablesInSameFunctionCallShouldDependOnEachOther(self):
+        code = '''
+        x = 0
+        y = 0
+        foo(x,y)
+        
+        def foo(a,b): print('hello')
+        '''
+        self.init(code)
 
-        self.assertEffectiveVars(expectedEffectiveVars)
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,2,3}, 'y': {1,2,3}}
+        
+        self.assertState(expectedState)
+    
+    def test_variablesInSameFunctionCallShouldDependOnEachOtherMoreComplex(self):
+        code = '''
+        x = 0
+        y = 0
+        foo(x, obj.foo(y))
+        
+        def foo(a,b): print('hello')
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'x': {1,2,3}, 'y': {1,2,3}, 'obj': {1,2,3}}
+        
+        self.assertState(expectedState)
+    
+    def test_attributeFuncCallAndThenFuncCallWithoutDefinition(self):
+        code = '''
+        arr = []
+        obj.method(foo(arr)) # arr shouldn't depend on 2 because not user defined function call
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'obj': {1,2}, 'arr': {1}}
+        
+        self.assertState(expectedState)
+    
+    def test_attributeFuncCallAndThenFuncCallWithDefinition(self):
+        code = '''
+        arr = []
+        obj.method(foo(arr))
+
+        def foo(): return 1
+        '''
+        self.init(code)
+
+        expectedState = AbstractState()
+        expectedState.M = {'obj': {1,2}, 'arr': {1,2}}
+        
+        self.assertState(expectedState)
+
+    # def test_effectiveVars_shouldPickArgs(self):
+    #     code = '''
+    #     x = 2
+    #     y = 5
+
+    #     def fn(a, b):
+    #         y = a
+
+    #     x = fn(1, y)
+    #     fn(x, 2)
+    #     '''
+    #     self.init(code)
+
+    #     expectedEffectiveVars = set({
+    #         'y',
+    #         'x'
+    #     })
+
+    #     self.assertEffectiveVars(expectedEffectiveVars)
+
+    # def test_effectiveVars_shouldPickArgsWithinFunc(self):
+    #     code = '''
+    #     def fn2(a, b):
+    #         z = 5
+    #         print(a, b)
+
+    #     fn2(1, fn2(1, 1))
+    #     '''
+    #     self.init(code)
+
+    #     expectedEffectiveVars = set({
+    #         'fn2:a',
+    #         'fn2:b'
+    #     })
+
+    #     self.assertEffectiveVars(expectedEffectiveVars)

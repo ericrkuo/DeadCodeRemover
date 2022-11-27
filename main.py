@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     # Dependencies
     state = AbstractState()
-    programSlicerService = ProgramSlicerService()
+    programSlicerService = ProgramSlicerService(tree)
     lineNumberVisitor = LineNumberVisitor(src)
     programSliceTransformer = ProgramSliceTransformer()
     reportGenerator = ReportGenerator()

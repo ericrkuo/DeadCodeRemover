@@ -1,6 +1,5 @@
 import ast
 from textwrap import dedent
-from service.programSlicerService import ProgramSlicerService
 from visitor.programSliceTransformer import ProgramSliceTransformer
 
 
@@ -197,11 +196,8 @@ class TestProgramSliceTransformer:
 
         def foo(a, b):
             x = 0
-            print(y)
-            print(range(len(x)))
             return (a + b, [x])
         x = [1, 2, 3]
-        print(y)
         foo(0, x)
         '''
 
@@ -275,6 +271,9 @@ class TestProgramSliceTransformer:
             moo(a)
             b += boo(a,b)
         foo([a, b])
+
+        def moo():
+            x = 1
         '''
 
         expectedCode = '''
@@ -282,6 +281,45 @@ class TestProgramSliceTransformer:
         for x in range(n):
             moo(a)
         foo([a, b])
+
+        def moo():
+            x = 1
+        '''
+
+        self.sliceProgramAndAssert(code, {1,6,9}, expectedCode)
+
+    def test_shouldNotKeepFunctionIfNotUserDefinedFunction(self):
+        code = '''
+        y = 0
+        for x in range(n):
+            c *= 1
+            moo(a)
+            b += boo(a,b)
+        foo([a, b])
+        '''
+
+        expectedCode = '''
+        y = 0
+        foo([a, b])
         '''
 
         self.sliceProgramAndAssert(code, {1,6}, expectedCode)
+
+    def test_shouldNotKeepFunctionIfNotUserDefinedFunctionMoreComplex(self):
+        code = '''
+        print(foo([a, b]))
+        foo(len(arr))
+
+        def foo():
+            return 1
+        '''
+
+        expectedCode = '''
+        print(foo([a, b]))
+        foo(len(arr))
+
+        def foo():
+            return 1
+        '''
+
+        self.sliceProgramAndAssert(code, {4}, expectedCode)

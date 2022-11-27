@@ -2,12 +2,14 @@ import ast
 
 from model.abstractState import AbstractState
 from visitor.astVisitor import ASTVisitor
+from visitor.functionDeclarationVisitor import FunctionDeclarationVisitor
 
 class ProgramSlicerService:
 
-    def __init__(self):
+    def __init__(self, node: ast.AST):
         self.effectiveVars: set(str) = set()
         self.astVisitor = ASTVisitor()
+        self.functionNames = FunctionDeclarationVisitor().getAllFunctionDefinitionNames(node)
 
     def slice(self, node: ast.AST, state: AbstractState):
         '''Run program slicing starting from the given `node`. Modify `state` in place, which is why the method has no return value'''
@@ -26,7 +28,6 @@ class ProgramSlicerService:
             for v in vs:
                 self.effectiveVars.add(convertVarname(v, state.funcName))
 
-        # TODO handle loops, conditionals, etc.
         elif type(node) is ast.If:
             self.analyzeIf(state, node)
 
@@ -48,7 +49,7 @@ class ProgramSlicerService:
     def analyzeWhile(self, state: AbstractState, statement: ast.While):
         varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
 
-        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
+        curr_L = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsInCondition])
         state.L.append(curr_L)
         
         preState = AbstractState()
@@ -62,8 +63,10 @@ class ProgramSlicerService:
             unionVars = set().union(state.M.keys(), preState.M.keys())
             for var in unionVars:
                 state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+
             for var in varsInCondition:
-                state.L[-1].union(state.M.get(var, {}))
+                varName = convertVarname(var, state.funcName)
+                state.L[-1] = state.L[-1].union(state.M.get(varName, {}))
         
         state.L.pop()
 
@@ -84,9 +87,12 @@ class ProgramSlicerService:
         targetVars = self.astVisitor.getAllReferencedVariables(statement.target)
         for var in targetVars:
             self.updateState(state, var, statement.iter, statement.lineno)
+
         # update state.L
         iterVars = self.astVisitor.getAllReferencedVariables(statement.iter)
-        curr_L = set().union(*[state.M.get(var, {}) for var in iterVars]).union(*[state.M.get(var, {}) for var in targetVars])
+        curr_L = set().union(
+            *[state.M.get(convertVarname(var, state.funcName), {}) for var in iterVars],
+            *[state.M.get(convertVarname(var, state.funcName), {}) for var in targetVars])
         state.L.append(curr_L)
         
         # continue slicing until the current state UNIONED with the previous state is the same as the previous state
@@ -102,8 +108,10 @@ class ProgramSlicerService:
             unionVars = set().union(state.M.keys(), preState.M.keys())
             for var in unionVars:
                 state.M[var] = set().union(state.M.get(var, {}), preState.M.get(var, {}))
+
             for var in targetVars.union(iterVars):
-                state.L[-1].union(state.M.get(var, {}))
+                varName = convertVarname(var, state.funcName)
+                state.L[-1] = state.L[-1].union(state.M.get(varName, {}))
         
         state.L.pop()
         
@@ -121,7 +129,7 @@ class ProgramSlicerService:
         '''
         varsInCondition = self.astVisitor.getAllReferencedVariables(statement.test)
 
-        curr_L = set().union(*[state.M.get(var, {}) for var in varsInCondition])
+        curr_L = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsInCondition])
         state.L.append(curr_L)
 
         bodyState = state.copy()
@@ -155,15 +163,31 @@ class ProgramSlicerService:
         Handles function calls without assignment; eg, handles `fn()` but not `x = fn()`
         In case parameters are mutated within the function, we pesmistically assume
         that all variables referenced in the call depends on the line number of the function call; 
-        ie, given x -> {1, 2} and `fn(x)` on line 4
+
+        NOTE: we only consider function calls defined by the user
+        ie, given x -> {1, 2} and `fn(x)` on line 4 and `fn` is a user defined function
         now, x -> {1, 2, 4}
+
+        Furthermore, any object attribute function calls like `obj.foo(a,b)`, we consider
+        `obj` to be dependent on the current line number, `a` and `b`, as well as the current L stack
         '''
+
+        # only vars directly referenced in user defined function calls depend on the line number
         n = statement.lineno
-        vars = self.astVisitor.getAllReferencedVariables(statement)
-        for var in vars:
-            varName = convertVarname(var, state.funcName)
-            self.effectiveVars.add(varName)
-            state.M[varName] = set().union(state.M.get(varName, {}), {n})
+        funcVars = self.astVisitor.getUserDefinedFunctionCallVars(statement, self.functionNames)
+        for funcVar in funcVars:
+            varsRead = self.astVisitor.getAllReferencedVariables(statement)
+            S_l = set().union(*[list for list in state.L])
+            S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
+            state.M[convertVarname(funcVar, state.funcName)] = set().union({n}, S_e, S_l)
+
+        # for statements in the form obj.func(...), we say obj depends on the current line number
+        attrVars = self.astVisitor.getAttributeFunctionCallVars(statement)
+        for attrVar in attrVars:
+            varsRead = self.astVisitor.getAllReferencedVariables(statement)
+            S_l = set().union(*[list for list in state.L])
+            S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
+            state.M[convertVarname(attrVar, state.funcName)] = set().union({n}, S_e, S_l)
 
     def analyzeAssign(self, state: AbstractState, statement: ast.Assign):
         '''
@@ -215,9 +239,10 @@ class ProgramSlicerService:
 
             # Handle cases like a[2] = b | a[2] = (1,2) | a[2] = [1,2] | a[1:2] = [1,2]
             # Note: we don't care what type value is because only a is affected
+            # Note: we pass in statement rather than statement.value because a[2] = b still depends on M[a]
             elif type(target) is ast.Subscript or type(target) is ast.Slice:
                 tNode: ast.Name = target.value
-                self.updateState(state, tNode.id, value, n)
+                self.updateState(state, tNode.id, statement, n)
 
             else:
                 raise Exception(f'Unexpected error: encountered unsupported target in an assignment call {target}')
@@ -255,17 +280,22 @@ class ProgramSlicerService:
             n: the line number of the statement
         '''
         varsRead = self.astVisitor.getAllReferencedVariables(value)
-        funcCallVars = self.astVisitor.getAllFunctionCallVars(value)
                 
         S_l = set().union(*[list for list in state.L])
         S_e = set().union(*[state.M.get(convertVarname(var, state.funcName), {}) for var in varsRead])
         state.M[convertVarname(targetVariable, state.funcName)] = set().union({n}, S_e, S_l)
         
-        # if RHS has a function call, passed vars also depend on the line and they are effective
+        # if ast node has a user defined function call, passed vars also depend on the line
+        funcCallVars = self.astVisitor.getUserDefinedFunctionCallVars(value, self.functionNames)
         for funcCallVar in funcCallVars:
             varName = convertVarname(funcCallVar, state.funcName)
-            self.effectiveVars.add(varName)
-            state.M[varName] = set().union(state.M.get(varName, {}), {n})
+            state.M[varName] = set().union(state.M.get(varName, {}), {n}, S_l)
+              
+        # for statements in the form obj.func(...), we say obj depends on the current line number
+        attrVars = self.astVisitor.getAttributeFunctionCallVars(value)
+        for attrVar in attrVars:
+            varName = convertVarname(attrVar, state.funcName)
+            state.M[varName] = set().union(state.M.get(varName, {}), {n}, S_l)
 
 def convertVarname(name: str, funcName: str):
     return f'{funcName}:{name}' if funcName else name

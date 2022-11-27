@@ -22,6 +22,8 @@ def bfs(visited, graph, node):
       if neighbour not in visited:
         visited.append(neighbour)
         queue.append(neighbour)
+  
+  return visited, queue
 
 # Driver Code
 bfs(visited, graph, 'A')

@@ -82,13 +82,13 @@
       <div>Shows the number of variables that are dependent on each line. Ranks from highest to lowest number of dependencies.</div>
       <div class="containertext-bg-light p-3">
         <div class="row">
-          <div class="col">
+          <div class="col-sm-1">
             <h6># Dependencies</h6>
           </div>
-          <div class="col">
+          <div class="col-sm-1">
             <h6>Line</h6>
           </div>
-          <div class="col">
+          <div class="col-6">
             <h6>Dependent variables</h6>
           </div>
           <div class="col">
@@ -97,9 +97,9 @@
         </div>
         {% for line, dependStat in dependMap.items() %}
         <div class="row">
-          <div class="col">{{dependStat.numDependencies}}</div>
-          <div class="col">{{line}}</div>
-          <div class="col">{{dependStat.variables}}</div>
+          <div class="col-sm-1">{{dependStat.numDependencies}}</div>
+          <div class="col-sm-1">{{line}}</div>
+          <div class="col-6">{{dependStat.variables}}</div>
           <div class="col">{{dependStat.source}}</div>
         </div>
         {% endfor %}

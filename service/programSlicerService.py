@@ -24,9 +24,10 @@ class ProgramSlicerService:
             self.analyzeAugAssign(state, node)
 
         elif type(node) is ast.Return:
-            vs = self.astVisitor.getAllReferencedVariables(node.value)
-            for v in vs:
-                self.effectiveVars.add(convertVarname(v, state.funcName))
+            if node.value:
+                vs = self.astVisitor.getAllReferencedVariables(node.value)
+                for v in vs:
+                    self.effectiveVars.add(convertVarname(v, state.funcName))
 
         elif type(node) is ast.If:
             self.analyzeIf(state, node)

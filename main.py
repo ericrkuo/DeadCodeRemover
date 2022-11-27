@@ -39,11 +39,11 @@ def dir_path(string):
         raise argparse.ArgumentTypeError(f"'{string}' is not a valid path to a directory")
 
 def configureArgParser():
-    argParser = argparse.ArgumentParser(description='List options')
+    argParser = argparse.ArgumentParser(description='CLI for dead code removal')
     argParser.add_argument('-i', '--input', metavar='input', type=file_path, help='Path to input file', required=True)
     argParser.add_argument('-o', '--output', metavar='output', type=dir_path, help='Path to output directory', required=True)
     argParser.add_argument('-e', '--effective-vars', action='store', nargs='*', metavar='effective variables', type=str, help='Space-separated list of effective variables to analyze in the form of <function name>:<variable name> or <variable name>; if omitted, target effective variables are found automatically.')
-    argParser.add_argument('-v', '--verbose', action='store_true', help='Keep all unused functions if True')
+    # argParser.add_argument('-v', '--verbose', action='store_true', help='Keep all unused functions if True')
     argParser.add_argument('-d', '--debug', action='store_true', default=False, help='Debug mode prints out logs')
     
     return argParser

@@ -27,9 +27,10 @@ def BFS(n: int):
         if len(que) > PROGRAM_THRESHOLD:
             metrices.emit(BFSQueueSizeExceededEvent(n, que))
             logger.log("Queue size exceeded threshold of " + PROGRAM_THRESHOLD)
-        metrics.emit(BFSEndEvent(n))
-        logger.log("BFS finished for node {n}")
-        span.end()
+
+    metrics.emit(BFSEndEvent(n))
+    logger.log("BFS finished for node {n}")
+    span.end()
     
     return que, nodes
     

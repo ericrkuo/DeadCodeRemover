@@ -52,7 +52,17 @@ Our project targets the 3 criteria required for the project. Namely,
 
 ## Architecture
 
-TODO use from slides and talk about tech stack
+Here's a high-level overview of our project.
+
+![image](https://media.github.students.cs.ubc.ca/user/1272/files/23852ef8-6c16-41bf-b820-6d0c65795dd4)
+
+1. The user uses our program analysis through the CLI by specifying an input file with potential dead code, and an output directory to generate the HTML report
+2. In parallel, two things happen:
+   1. First, we run program slicing on the input code. This generates the final abstract state `(M,L)` pair.
+   2. Second, if the user did not specify a set of effective variables, our program scans the code and approximates the effective variables.
+      1. Please see the section [Effective variables](#effective-variables) for more details
+3. Afterwards, for each effective variable, we get it's program slice and then merge the resulting slices together by taking the union of the line numbers they depend on. 
+4. We then pass this information to our UI which formats our findings into a report.
 
 ## Code structure
 

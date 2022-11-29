@@ -4,7 +4,7 @@ TODO talk about the 3 criteria we target
 
 # Disclaimer
 
-TODO talk about how we changed project idea midway, which is why `Milestones.md` and our google doc show some discrepancy
+Our group changed our idea midway during Milestone 4. We sent an email to Alex and received approval to change our project idea. We redid Milestones 2 and 3 in [MILESTONES.md](./MILESTONES.md), but kept an archive at the very bottom to show that we put significant effort in our previous ideas and that we submitted previous milestones on time. Please contact our group if there's any questions!
 
 # Use Case & Motivation
 

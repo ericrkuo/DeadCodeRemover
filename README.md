@@ -1,12 +1,10 @@
 # Project 2 Group12
 
-TODO talk about the 3 criteria we target
-
 # Disclaimer
 
 Our group changed our idea midway during Milestone 4. We sent an email to Alex and received approval to change our project idea. We redid Milestones 2 and 3 in [MILESTONES.md](./MILESTONES.md), but kept an archive at the very bottom to show that we put significant effort in our previous ideas and that we submitted previous milestones on time. Please contact our group if there's any questions!
 
-# Use Case & Motivation
+# Introduction, Use Case & Motivation
 
 TODO define dead code, target users, motivation, problem
 
@@ -45,6 +43,8 @@ Please see our [Google Doc](https://docs.google.com/document/d/1rTH12Da8VUmN5pwc
 Here are our [Presentation Slides](https://docs.google.com/presentation/d/19lBsd1kV9K8-WTmjm7iKl9PKMK03tVnVeWeO9uBxy9o/edit?usp=sharing) as well
 
 # Design
+
+TODO talk about the 3 criteria we target
 
 TODO impossible 4 properties
 

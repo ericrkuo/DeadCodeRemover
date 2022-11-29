@@ -251,7 +251,53 @@ Our UI also displays some key statistics such as
 # User Studies
 
 # Future Work
-TODO talk about what we don't support & limitations in our project
+Here is the result of final user study
+- Users suggesting being able to do analysis across different files
+  - Figure out the code that calls the function in different files. This makes the dependency complex.
+- Users suggested more complex control flow mechanisms in Python such as
+   - For else
+    - 
+    ```
+    for item in container:
+        if search_something(item):
+            # Found it!
+            process(item)
+            break
+        else:
+            # Didn't find anything..
+            not_found_in_container()
+    ```
+  - While else
+  - Assignment expressions in while loops
+    - 
+    ```
+    while line := data.readline(): 
+        do_smthg(line)
+    ```
+  - Note: Python has plenty of special syntaxes that do not appear in other languages.
+
+- Users suggested that it might be easier to use as a built-in editor extension instead of a command line. Running the program with a file path for every dead code detection will be tiresome.
+- Users suggested they want to see some dead code that is unreachable for any inputs.
+- Users wondered if it’s possible to differentiate to analyze function calls by passing by reference and by value.
+  - Current design chose to assume all arguments in function call depending on that line.
+- Users wondered if this project support the file consisting of class definition.
+  - Class method would include the code to modify the class variables but it does not return anything. In our current implementation, such code will be related to the effective variables so that it might be removed from our slicing algorithm.
+- Overall, users found the dead code removal helpful to not only understand what the code is doing, but also how to clean up any dead code that isn’t needed. They even started experimenting with different programs themselves.
+
+
+Based on the above user study, our future work mainly includes,
+- User Experience
+  - On-the-fly analysis
+  - VS Code built-in extension
+- Support for more Python features
+  - Support class definitions (e.g. self.foo(a))
+  - Else statements in while loops and for loops
+  - Assignments in while loops and if statements
+  - Support aliasing and global variables
+- Analysis Optimizations
+  - More advanced algorithms for finding effective variables
+  - Less pessimistic assumptions for variable dependencies
+
 
 # References
 1. https://www.cs.wm.edu/~denys/pubs/TSE'18-DeadCode.pdf?fbclid=IwAR38JynyhFk7aWL51v6mqAlH8E-pHnHIgFSOQxpHMRuUkzOXTsBSdbq1uX4

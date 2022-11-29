@@ -46,12 +46,16 @@ Since Python is a dynamically typed language, these coding practices checks woul
 1. First install all dependencies
    - Run the command `pip install -r requirements.txt` from the project directory
 
-TODO talk about example inputs directory
+2. Run the program with example inputs
+   - ```python main.py -i <filepath> -o <output dirpath>```
 
 TODO add more details
 - command line usage
-  - e.g. -d is debug mode and will print to terminal
+  - e.g. -d is debug mode and will print to terminal.
 - how to interpret the HTML report
+  - Go to the directory specified by `-o`, then open in your local browser.
+- help command
+  - `-h` command shows the list of command we support.
 
 ## Disclaimer about what we don't support
 

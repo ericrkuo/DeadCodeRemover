@@ -6,13 +6,39 @@ Our group changed our idea midway during Milestone 4. We sent an email to Alex a
 
 # Introduction, Use Case & Motivation
 
-TODO define dead code, target users, motivation, problem
+## Definition of dead code
 
-TODO why we chose Python
+The definition of dead code for the scope of our project is code that is part of the source code of a program and is executed but is not used. This can include code that does not yield any results to the core logic of the program, or code that is not used in any other computation. Please see our practical example for further clarification.
+
+## Motivation & Target users
+
+From this paper, we found that dead code was quite common in the industry. Here are some examples they gave:
+
+- Brown et al. [6] reported that, during the code examination of an industrial software system, they found a large amount of source code (between 30 and 50 percent of the total) that was not understood or documented by any developer currently working on it. Later, they learned that this was dead code. 
+
+- Boomsma et al. [7] reported that on a subsystem of an industrial web system written in PHP, the developers removed 2,740 dead files, namely about 30% of the subsystem’s files. 
+
+- Eder et al. [5] studied an industrial software system written in .NET in order to investigate how much maintenance involved dead code. They found that 25% of all method genealogies1 were dead.
+
+
+Removing dead code helps developers better comprehend the source code and its structure, and allows the code to be more maintainable in the future. Small chunks of dead code could be negligible, but as applications grow in scale, this could be a bottleneck for performance due to increased time and memory consumption.
+
+## Target Users
+
+- Programmers who are tasked with modifying a complex code base, but are having trouble understanding the core logic of the code due to surrounding code that’s dead - it doesn’t affect the output of the code. Please see our practical example for more details
+- Programmers who are tasked with cleaning up accumulated tech debt, but are unsure what the core functionality of the code is. Thus, by removing dead code, they can focus solely on the core logic of the program and clean up the code efficiently.
+- New Python programmers who have trouble writing maintainable and easy-to-read code can use our tool to help identify dead code
+
+
+## Why Python?
+
+Since Python is a dynamically typed language, these coding practices checks would be flow-sensitive since it concerns what a program does and depends on the line of code (earlier statements, conditionals, etc.)
+
 
 ## Static vs Dynamic Analysis
+[ why we chose static analysis ]
 
-TODO why we chose static analysis
+
 
 # Getting Started
 

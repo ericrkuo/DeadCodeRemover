@@ -70,4 +70,6 @@ TODO The design of your program analysis; to what extent does this seem a good f
 TODO talk about what we don't support & limitations in our project
 
 # References
-TODO insert link to all the papers we read
+1. https://www.cs.wm.edu/~denys/pubs/TSE'18-DeadCode.pdf?fbclid=IwAR38JynyhFk7aWL51v6mqAlH8E-pHnHIgFSOQxpHMRuUkzOXTsBSdbq1uX4
+2. https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8486334 
+

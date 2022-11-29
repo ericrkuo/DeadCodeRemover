@@ -32,9 +32,11 @@ TODO add more details
 Please see the section [Future Work](#future-work)
 
 ## Running tests
-Run the command `python -m pytest`
 
-TODO add blurb about running in vscode
+The tests can either be ran by executing the command `python -m pytest`, or alternatively by using the `Testing` tab in VSCode which should discover the tests in our repo.
+
+![image](https://media.github.students.cs.ubc.ca/user/1272/files/ccca1d73-31e4-49ef-8ff0-f8098aac8062)
+
 
 # Relevant documents
 

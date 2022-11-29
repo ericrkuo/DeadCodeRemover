@@ -121,11 +121,81 @@ In addition to for loops, our team also implemented support for while loops in P
 
 Here's our function [analyzeWhile](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L50), [analyzeFor](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L75), and our function [programSliceTransformer loops](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/visitor/programSliceTransformer.py#L105-L121) that performs the optimization mentioned above.
 
-### Slicing across functions
+### Slicing across functions - Tradeoffs w.r.t approximating information
 
-TODO talk about assumptions we had to make
+Lastly, one of the main features of our project is the ability to perform program slicing across functions. Do note that there are key limitations mentioned here and in the [Future Work](#future-work) section.
 
-TODO The design of your program analysis; to what extent does this seem a good fit for the use-case (task and users)?  (LO IIX). If applicable (usually for a static analysis), a sensible choice of trade-offs w.r.t. approximating information about possible executions (LO IX)
+### 1. Upgrading our abstract state to handle functions
+To handle conflicting variable names across functions, we use the prefix of the function name in the abstract state map `M`. See the following example below:
+
+```python
+1. def foo():
+2.   x = 1
+3.
+4. def moo():
+5.   x = 1
+6. 
+7. x = 1
+
+M = (foo:x→{2}, moo:x→{5}, x→{7})
+```
+
+Note that we do not handle aliasing yet or global variables. This is something we would be more than happy to take a stab at for our future work, and it also came up as feedback in our final user study.
+
+### 2. Handling class methods
+
+Our analysis pessimistically assumes calling methods on an object is an assignment that can modify the object.
+
+- For example, if we have `arr.append(0)` or `arr.pop(0)`, then we can sort of think of it as an assignment `arr = arr + 0` or `arr = arr - <last element>` respectively, so we update `M[arr] <- M[arr] union {n} union S_l` (in addition to any other variables used in the assignment, e.g. `arr.append(x)`)
+
+However, this does come with some drawbacks since we're over-approximating.
+
+- Consider the case where we have `logger.log(...)`. Then we estimate that `logger` depends on the current line, even though it's not a statement that can modify the object.
+- However, we would only keep the code with the logging statements IF our program finds that `logger` is an effective variable, or if any effective variable somehow depends on the `logger` variable. Because of these unlikely cases, we decided this would be okay for the time being, and through thorough testing, we saw that logging statements were being removed as dead code which is what's intended.
+
+In the future, we can be smarter and potentially have a black list or white list of object methods that do modify or do not modify the object.
+
+### 3. Parameters in function calls
+
+Originally, we assumed that all parameters in function calls could be modified and depend on the current line. However, this was too pessimistic and so we could end up keeping statements like `print(x)` in our code, since we said `x` depends on this current line.
+
+Our original intention was to handle cases where we have an object like `arr = [1,2]`, which gets passed to a method like `filterElements(arr)`, and since this function can modify `arr`, we should say `arr` depends on this line. 
+
+To address these two issues, we decided that we should only consider parameters in function calls, for functions that are **defined** by the user. Thus, first we get all function declaration names, and once we approach an `ast.Call`, we only look at function calls defined by the user.
+
+[analyzeCall](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L162) has our implementation details
+
+### 4. Deciding which function calls to keep
+Originally, we were keeping all function calls in our resulting slices. However, this ended up keeping irrelevant statements like
+
+```python
+print(...)
+logger.log(...)
+# and a bunch more
+```
+
+To handle this, we decided to only keep function calls that are user-defined functions. This way, we could keep statements such as
+
+```python
+def foo(): return 1
+
+# keep
+foo()
+len(foo())
+print(foo())
+```
+
+Our reasoning was that since our analysis only works for single files at the moment, we wouldn't need to worry about accidentally removing function calls from other files. For function calls that are from external libraries, most likely those functions are class methods, in the form of `obj.method(...)`, so we handle that appropriately as mentioned earlier.
+
+Thus, we end up keeping statements that are core to the program.
+
+```python
+if __name__ == 'main':
+   functionOne()
+   functionTwo()
+   functionThree()
+   ...
+```
 
 ## Impossible 4 Properties
 

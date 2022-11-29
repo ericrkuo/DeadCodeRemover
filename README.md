@@ -76,15 +76,50 @@ Here's a high-level overview of our project.
 
 ## Effective variables
 
+Effective variables are variables that influence the program functionality. By merging the slices for all effective variables, we essentially exclude statements that do not affect the core logic of the code, in other words, we exclude the dead code. 
+
+Our project either allows the user to specify a set of effective variables themselves through the CLI, or we scan the input code and approximate what the effective variables are.
+
+Currently, our implementation treats all **return variables** from each function as effective variables. This is mainly for the reason that return variables from most functions are what's primarily computed in the function, thus the statements that the return variable depends on is not dead code.
+
+However, this means that functions that do not have any return values will not have any effective variables, and thus, our analysis will be unable to detect dead code. Therefore, in the future, our project could have more advanced methods of finding effective variables, either by looking at the core variables mentioned in the function documentation, or by using the frequency of variables referenced in a function.
+
 ## Program slicing & design tradeoffs
 
-TODO talk about enhancements
+We built on top of the program slicing algorithm learned in class and implemented more complex scenarios/behaviors.
 
 ### Assignments
 
+In Python, it's possible to perform multiple assignments in one line. Here are just a few examples
+
+```
+a = b = 1
+(a,b,c) = (d,e,f) = (x+y, z, w)
+arr = [x,y,z]
+a,b,c = arr
+```
+
+To handle these complex cases, we implemented two functions [analyzeAssign](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L193) and [analyzeAugAssign](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L251).
+
+We also made sure to thoroughly test our code by testing different ways of assignments in Python.
+
+Please see [Assignment Tests](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/test/test_ProgramSlicerService.py#L23-L25) for all the cases we covered.
+
 ### Conditionals
 
+Building on top of what we learned in lecture for slicing conditionals, our group made a couple of optimizations.
+
+1. In Python, it's not possible to have empty conditional blocks. Thus, if an `if` block or `elif` block has no statements kept after removing dead code, we replace the entire block with a `pass` statement
+2. If the `else` block has no statements kept after removing dead code, we remove it entirely.
+3. Lastly, if all blocks of the conditional are empty, we remove the conditional in its entirety.
+
+Here's our function [programSlicerService::analyzeIf](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L119) and our function [programSliceTransformer::visit_If](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/visitor/programSliceTransformer.py#L89) that performs the optimizations mentioned above.
+
 ### Loops
+
+In addition to for loops, our team also implemented support for while loops in Python. We did a similar optimization where if the body of the loop is empty after removing dead code, we remove the loop in its entirety.
+
+Here's our function [analyzeWhile](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L50), [analyzeFor](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/service/programSlicerService.py#L75), and our function [programSliceTransformer loops](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/285b28d2c45206b893715318adbb80bf2c00b2fe/visitor/programSliceTransformer.py#L105-L121) that performs the optimization mentioned above.
 
 ### Slicing across functions
 

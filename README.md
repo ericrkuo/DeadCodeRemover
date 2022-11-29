@@ -80,6 +80,16 @@ Here's a high-level overview of our project.
 
 TODO talk about enhancements
 
+### Assignments
+
+### Conditionals
+
+### Loops
+
+### Slicing across functions
+
+TODO talk about assumptions we had to make
+
 TODO The design of your program analysis; to what extent does this seem a good fit for the use-case (task and users)?  (LO IIX). If applicable (usually for a static analysis), a sensible choice of trade-offs w.r.t. approximating information about possible executions (LO IX)
 
 ## Impossible 4 Properties
@@ -87,6 +97,16 @@ TODO The design of your program analysis; to what extent does this seem a good f
 Similarly to what we learned about program slicing in lecture, our static analysis does not always say "no" when the answer should be "no" upon termination. Our project prefers false positives over false negatives because we don't want to mistakenly remove live code. Thus, our project over-approximates and is pessimistic, similar to the program slicing algorithm we learned in class.
 
 ## UI
+
+Our UI is built using [Jinja](https://jinja.palletsprojects.com/en/3.1.x/), a templating engine. 
+
+### Statistics
+
+Our UI also displays some key statistics such as 
+
+1. The amount of code removed and which lines were removed
+2. The variables that depend on each line.
+   1. This statistic is useful for our target users in the sense that they can identify any variables that mistakenly should not depend on the current line. Furthermore, they can also use this to identify lines that have *too* many implicit and explicit dependencies, which may motivate them to further simplify their code.
 
 # User Studies
 

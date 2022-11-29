@@ -98,6 +98,7 @@ Here's a high-level overview of our project.
   - Get the code segment corresponding to a line number
   - Get all referenced variables in a node or a function call
 - [ProgramSliceTransformer](./visitor/programSliceTransformer.py) gets the resulting slicing program given a sequence of line numbers to keep
+  - The motivation for this class is that the line numbers in map `M` of our abstract state do not tell us **all** the lines that need to be kept. For example, things like conditional declarations, loop declarations, function declarations, import statements, return statements, etc. all need to be kept.
 - [ui](./ui) contains the files to generate our HTML report
 
 ## Effective variables
@@ -213,7 +214,7 @@ print(foo())
 
 Our reasoning was that since our analysis only works for single files at the moment, we wouldn't need to worry about accidentally removing function calls from other files. For function calls that are from external libraries, most likely those functions are class methods, in the form of `obj.method(...)`, so we handle that appropriately as mentioned earlier.
 
-Thus, we end up keeping statements that are core to the program.
+Thus, we end up keeping statements that are core to the program such as:
 
 ```python
 if __name__ == 'main':

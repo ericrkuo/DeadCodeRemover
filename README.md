@@ -20,6 +20,8 @@ TODO why we chose static analysis
 1. First install all dependencies
    - Run the command `pip install -r requirements.txt` from the project directory
 
+TODO talk about example inputs directory
+
 TODO add more details
 - command line usage
   - e.g. -d is debug mode and will print to terminal
@@ -43,10 +45,10 @@ Please see our [Google Doc](https://docs.google.com/document/d/1rTH12Da8VUmN5pwc
 Here are our [Presentation Slides](https://docs.google.com/presentation/d/19lBsd1kV9K8-WTmjm7iKl9PKMK03tVnVeWeO9uBxy9o/edit?usp=sharing) as well
 
 # Design
-
-TODO talk about the 3 criteria we target
-
-TODO impossible 4 properties
+Our project targets the 3 criteria required for the project. Namely,
+1. A static analysis component
+2. Targets the Python language and its AST
+3. Has a substantial visualization component.
 
 ## Architecture
 
@@ -54,7 +56,13 @@ TODO use from slides and talk about tech stack
 
 ## Code structure
 
-TODO talk about visitor patterns
+- [ProgramSlicerService](./service/programSlicerService.py) is our main algorithm that performs program slicing
+- [visitor](./visitor/) contains multiple visitors that traverse the Python AST. For example, we use visitors to:
+  - Find all function declarations
+  - Get the code segment corresponding to a line number
+  - Get all referenced variables in a node or a function call
+- [ProgramSliceTransformer](./visitor/programSliceTransformer.py) gets the resulting slicing program given a sequence of line numbers to keep
+- [ui](./ui) contains the files to generate our HTML report
 
 ## Effective variables
 
@@ -63,6 +71,10 @@ TODO talk about visitor patterns
 TODO talk about enhancements
 
 TODO The design of your program analysis; to what extent does this seem a good fit for the use-case (task and users)?  (LO IIX). If applicable (usually for a static analysis), a sensible choice of trade-offs w.r.t. approximating information about possible executions (LO IX)
+
+## Impossible 4 Properties
+
+Similarly to what we learned about program slicing in lecture, our static analysis does not always say "no" when the answer should be "no" upon termination. Our project prefers false positives over false negatives because we don't want to mistakenly remove live code. Thus, our project over-approximates and is pessimistic, similar to the program slicing algorithm we learned in class.
 
 ## UI
 

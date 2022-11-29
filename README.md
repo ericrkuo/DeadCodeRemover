@@ -133,7 +133,11 @@ Similarly to what we learned about program slicing in lecture, our static analys
 
 ## UI
 
-Our UI is built using [Jinja](https://jinja.palletsprojects.com/en/3.1.x/), a templating engine. 
+Our UI is built using [Jinja](https://jinja.palletsprojects.com/en/3.1.x/), a templating engine.
+
+Main code
+- [template.html](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/main/ui/template.html) - the template of our HTML report
+- [generateReport.py](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12/blob/main/ui/generateReport.py) which takes the data from our program analysis, and feeds that to Jinja which renders the data in the template.
 
 ### Statistics
 

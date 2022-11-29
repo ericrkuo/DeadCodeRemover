@@ -12,7 +12,7 @@ The definition of dead code for the scope of our project is code that is part of
 
 ## Motivation & Target users
 
-From this paper, we found that dead code was quite common in the industry. Here are some examples they gave:
+From [this paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8486334&tag=1), we found that dead code was quite common in the industry. Here are some examples they gave:
 
 - Brown et al. [6] reported that, during the code examination of an industrial software system, they found a large amount of source code (between 30 and 50 percent of the total) that was not understood or documented by any developer currently working on it. Later, they learned that this was dead code. 
 
@@ -38,7 +38,7 @@ Since Python is a dynamically typed language, these coding practices checks woul
 ## Static vs Dynamic Analysis
 [ why we chose static analysis ]
 
-
+TODO
 
 # Getting Started
 
@@ -49,7 +49,6 @@ Since Python is a dynamically typed language, these coding practices checks woul
 2. Run the program with example inputs
    - ```python main.py -i <filepath> -o <output dirpath>```
 
-TODO add more details
 - command line usage
   - e.g. -d is debug mode and will print to terminal.
 - how to interpret the HTML report

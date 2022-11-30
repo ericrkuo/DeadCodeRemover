@@ -3,7 +3,7 @@
 The main components of this README include an overview of our project, how to run it, the architecture/design of our project, some tradeoffs of our static analysis, and much more!
 
 # Disclaimer
-Our group changed our idea midway during Milestone 4. We sent an email to Alex and received approval to change our project idea. We redid Milestones 2 and 3 in [MILESTONES.md](./MILESTONES.md), but kept an archive at the very bottom to show that we put significant effort in our previous ideas and that we submitted previous milestones on time. Please contact our group if there's any questions!
+Our group changed our idea midway during Milestone 4. We sent an email to Alex and received approval to change our project idea. We redid Milestones 2 and 3 in [MILESTONES.md](./MILESTONES.md), but kept an archive at the very bottom of the file to show that we put significant effort in our previous ideas and that we submitted previous milestones on time. Please contact our group if there's any questions!
 
 # Introduction, Use Case & Motivation
 
@@ -27,14 +27,14 @@ Removing dead code helps developers better comprehend the source code and its st
 Furthermore, oftentimes companies can accumulate a lot of tech debt when shipping out features and iterating fast. Because dev teams have to deal with lots of other problems related to functioning and execution, they may not pay attention to how much dead code is appearing, and this could potentially be harmful as developers would have a hard time modifying the code in the future, which decreases the overall teams progress.
 
 ## Target Users
-
-- Programmers who are tasked with modifying a complex code base, but are having trouble understanding the core logic of the code due to surrounding code that’s dead - it doesn’t affect the output of the code. Please see our practical example for more details
-- Programmers who are tasked with cleaning up accumulated tech debt, but are unsure what the core functionality of the code is. Removing dead code can not only clean up tech debt as a first pass, but can afterwards, also allow developers to focus solely on the core logic of the program and clean up the code even more.
+Our target uses are:
+- Programmers who are tasked with modifying or learning a complex code base, but are having trouble understanding the core logic of the code due to surrounding code that’s dead - it doesn’t affect the output of the code. Please see our practical example for more details
+- Programmers who are tasked with cleaning up accumulated tech debt, but are unsure what the core functionality of the code is. Removing dead code not only cleans up the tech debt as a first pass, but can afterwards also allow developers to focus solely on the core logic of the program and clean up the code even more.
 - New Python programmers who have trouble writing maintainable and easy-to-read code can use our tool to help identify dead code.
 
 ## Why Python?
 
-Since Python is a dynamically typed language, these coding practices checks would be flow-sensitive since it concerns what a program does and depends on the line of code (earlier statements, conditionals, etc.)
+Since Python is a dynamically typed language, it's already difficult enough to infer what types certain variables are. Our group thought that by removing dead code, we can reduce the time spent by programmers understanding code that's not relevant to the output of the function, and instead, let them focus solely on the relevant parts.
 
 
 ## Static vs Dynamic Analysis
@@ -64,6 +64,7 @@ Running this example through our project, we can see that more than 50% of dead 
 
 3. For full details of how to use our command line, run `python main.py -h`. This will output:
 
+   - Please see the section [Effective Variables](#effective-variables) first to understand better what the option means
 ```
 usage: main.py [-h] -i input -o output [-e [effective variables ...]] [-d]
 
@@ -87,7 +88,7 @@ optional arguments:
 
 ## Disclaimer about what we don't support
 
-Please see the section [Future Work](#future-work)
+Please see the section [Future Work](#future-work) as well as our findings from our final user study in [User Study Results](#user-studies)
 
 ## Running our tests
 
@@ -143,7 +144,7 @@ Our project either allows the user to specify a set of effective variables thems
 
 Currently, our implementation treats all **return variables** from each function as effective variables. This is mainly for the reason that return variables from most functions are what's primarily computed in the function, thus the statements that the return variable depends on is not dead code.
 
-However, this means that functions that do not have any return values will not have any effective variables, and thus, our analysis will be unable to detect dead code. Therefore, in the future, our project could have more advanced methods of finding effective variables, either by looking at the core variables mentioned in the function documentation, or by using the frequency of variables referenced in a function.
+However, this means that functions that do not have any return values will not have any effective variables, and thus, our analysis will be unable to detect dead code. Therefore, in the future, our project could have more advanced methods of finding effective variables, either by looking at the core variables mentioned in the function documentation, or by using the frequency of variables referenced in a function. For the time being, the user can fix this by supplying their own list of effective variables through our CLI. Although this can be cumbersome for the user, we still think this is valuable since a programmer may know what the core variables of a function are, and just pass those to our analysis to remove the dead code.
 
 ## Program slicing & design tradeoffs
 
@@ -231,7 +232,7 @@ Originally, we were keeping all function calls in our resulting slices. However,
 
 ```python
 print(...)
-logger.log(...)
+print(len(...))
 # and a bunch more
 ```
 
@@ -276,7 +277,11 @@ Our UI also displays some key statistics such as
 
 1. The amount of code removed and which lines were removed
 2. The variables that depend on each line.
-   1. This statistic is useful for our target users in the sense that they can identify any variables that mistakenly should not depend on the current line. Furthermore, they can also use this to identify lines that have *too* many implicit and explicit dependencies, which may motivate them to further simplify their code.
+   1. This statistic is useful for our target users in the sense that they can identify any variables that mistakenly should not depend on the current line. Furthermore, they can also use this to identify lines that have *too* many implicit and explicit dependencies, which may motivate the user to simplify their code.
+
+### Drill Down View
+
+Our UI also displays the individual program slices for each effective variable. This is important to the programmer in case they want finer grained details on why some dependencies exist between variables.
 
 # User Studies
 
@@ -314,11 +319,11 @@ Some of the main feedback we got was:
 - Users suggested that it might be easier to use as a built-in editor extension instead of a command line. Running our analysis each time through a CLI for every file the user desires could be cumbersome for the user.
 - Users suggested they want to see some dead code that is unreachable for any inputs.
   - Our thoughts: Yes, we agree. Right now our definition of dead code doesn't include unreachable code. Thus, we could extend this idea for the future.
-- Users also wondered if it’s possible to differentiate to analyze function calls by passing by reference and by value.
-  - Current design chose to assume all arguments in function call depending on that line.
+- Users also wondered if it’s possible to differentiate parameters passed into function calls either by reference or by value.
+  - Our current design chose to assume all arguments in function call depending on that line. But this was too pessimistic, so we acted on this feedback and only considered function calls for functions defined by the user.
   - We'd also have to think about aliasing and global variables.
-- Users wondered if this project support the file consisting of class definition.
-  - Class method would include the code to modify the class variables but it does not return anything. In our current implementation, such code will be related to the effective variables so that it might be removed from our slicing algorithm.
+- Users wondered if our project supports class definitions
+  - Our thoughts: Class methods would include the code to modify the class variables but it does not return anything. In our current implementation, such code will be related to the effective variables so that it might be removed from our slicing algorithm.
 
 Full details can be found [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.tzsjpiajuvw0)
 
@@ -351,7 +356,7 @@ Based on our final user study results and our own analysis, our future work main
   - Support class definitions (e.g. self.foo(a))
   - Else statements in while loops and for loops
   - Assignments in while loops and if statements
-  - Support aliasing and global variables
+  - Support aliasing, class definitions, global variables and more.
 - Analysis Optimizations
   - More advanced algorithms for finding effective variables
   - Less pessimistic assumptions for variable dependencies

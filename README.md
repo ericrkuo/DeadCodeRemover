@@ -1,34 +1,36 @@
 # Project 2 Group12
 
-# Disclaimer
+The main components of this README include an overview of our project, how to run it, the architecture/design of our project, some tradeoffs of our static analysis, and much more!
 
+# Disclaimer
 Our group changed our idea midway during Milestone 4. We sent an email to Alex and received approval to change our project idea. We redid Milestones 2 and 3 in [MILESTONES.md](./MILESTONES.md), but kept an archive at the very bottom to show that we put significant effort in our previous ideas and that we submitted previous milestones on time. Please contact our group if there's any questions!
 
 # Introduction, Use Case & Motivation
 
 ## Definition of dead code
 
-The definition of dead code for the scope of our project is code that is part of the source code of a program and is executed but is not used. This can include code that does not yield any results to the core logic of the program, or code that is not used in any other computation. Please see our practical example for further clarification.
+The definition of dead code for the scope of our project is code that is part of the source code of a program and is executed but is not used. This can include code that does not yield any results to the core logic of the program, or code that is not used in any other computation. Please see our [practical example](#practical-example) for further clarification.
 
 ## Motivation & Target users
 
 From [this paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8486334&tag=1), we found that dead code was quite common in the industry. Here are some examples they gave:
 
-- Brown et al. [6] reported that, during the code examination of an industrial software system, they found a large amount of source code (between 30 and 50 percent of the total) that was not understood or documented by any developer currently working on it. Later, they learned that this was dead code. 
+- *Brown et al. [6] reported that, during the code examination of an industrial software system, they found a large amount of source code (between **30 and 50 percent** of the total) that was not understood or documented by any developer currently working on it. Later, they learned that this was **dead code**.*
 
-- Boomsma et al. [7] reported that on a subsystem of an industrial web system written in PHP, the developers removed 2,740 dead files, namely about 30% of the subsystem’s files. 
+- *Boomsma et al. [7] reported that on a subsystem of an industrial web system written in PHP, the developers removed **2,740 dead files**, namely about 30% of the subsystem’s files.* 
 
-- Eder et al. [5] studied an industrial software system written in .NET in order to investigate how much maintenance involved dead code. They found that 25% of all method genealogies1 were dead.
+- *Eder et al. [5] studied an industrial software system written in .NET in order to investigate how much maintenance involved dead code. They found that **25% of all method genealogies1 were dead.***
 
 
 Removing dead code helps developers better comprehend the source code and its structure, and allows the code to be more maintainable in the future. Small chunks of dead code could be negligible, but as applications grow in scale, this could be a bottleneck for performance due to increased time and memory consumption.
 
+Furthermore, oftentimes companies can accumulate a lot of tech debt when shipping out features and iterating fast. Because dev teams have to deal with lots of other problems related to functioning and execution, they may not pay attention to how much dead code is appearing, and this could potentially be harmful as developers would have a hard time modifying the code in the future, which decreases the overall teams progress.
+
 ## Target Users
 
 - Programmers who are tasked with modifying a complex code base, but are having trouble understanding the core logic of the code due to surrounding code that’s dead - it doesn’t affect the output of the code. Please see our practical example for more details
-- Programmers who are tasked with cleaning up accumulated tech debt, but are unsure what the core functionality of the code is. Thus, by removing dead code, they can focus solely on the core logic of the program and clean up the code efficiently.
-- New Python programmers who have trouble writing maintainable and easy-to-read code can use our tool to help identify dead code
-
+- Programmers who are tasked with cleaning up accumulated tech debt, but are unsure what the core functionality of the code is. Removing dead code can not only clean up tech debt as a first pass, but can afterwards, also allow developers to focus solely on the core logic of the program and clean up the code even more.
+- New Python programmers who have trouble writing maintainable and easy-to-read code can use our tool to help identify dead code.
 
 ## Why Python?
 
@@ -36,9 +38,19 @@ Since Python is a dynamically typed language, these coding practices checks woul
 
 
 ## Static vs Dynamic Analysis
-[ why we chose static analysis ]
 
-TODO
+We did not choose a dynamic analysis because it would've kept code relevant for a single execution. However, our project needs to keep code relevant to all executions since removing dead code for one execution, may not be considered dead code for another execution path. Thus, our project is a static analysis.
+
+## Practical Example
+
+One of the use cases/target users of our project are software engineers who are having difficulty understanding the purpose of the codebase because of how much dead code there is.
+
+For example, consider this code [example_image_uploader.py](./example_inputs/example_image_uploader.py). To the naked eye, it's difficult to understand what the code is doing. Upon looking closer, we can see that there's dead code such as logging, tracing, metrics, and DB IO. All these cloud what the purpose of the code is doing.
+
+Running this example through our project, we can see that more than 50% of dead code is removed. Upon looking at the final resulting program, it's much easier for a developer to understand what the core logic of the code is.
+
+![image](https://media.github.students.cs.ubc.ca/user/1272/files/2b6ce83b-a3aa-4f07-bdbe-490503eaf683)
+[Source](https://docs.google.com/presentation/d/19lBsd1kV9K8-WTmjm7iKl9PKMK03tVnVeWeO9uBxy9o/edit#slide=id.g16a0b4bf3dd_0_4)
 
 # Getting Started
 
@@ -48,19 +60,36 @@ TODO
 
 2. Run the program with example inputs
    - ```python main.py -i <filepath> -o <output dirpath>```
+   - There is a directory of [example_inputs](./example_inputs/) that you can try out!
 
-- command line usage
-  - e.g. -d is debug mode and will print to terminal.
-- how to interpret the HTML report
-  - Go to the directory specified by `-o`, then open in your local browser.
-- help command
-  - `-h` command shows the list of command we support.
+3. For full details of how to use our command line, run `python main.py -h`. This will output:
+
+```
+usage: main.py [-h] -i input -o output [-e [effective variables ...]] [-d]
+
+CLI for dead code removal
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i input, --input input
+                        Path to input file
+  -o output, --output output
+                        Path to output directory
+  -e [effective variables ...], --effective-vars [effective variables ...]
+                        Space-separated list of effective variables to analyze in    
+                        the form of <function name>:<variable name> or <variable     
+                        name>; if omitted, target effective variables are found      
+                        automatically.
+  -d, --debug           Debug mode prints out logs
+```
+
+4. The command line will generate an HTML report in the specified output directory, which can then be opened in your local browser.
 
 ## Disclaimer about what we don't support
 
 Please see the section [Future Work](#future-work)
 
-## Running tests
+## Running our tests
 
 The tests can either be ran by executing the command `python -m pytest`, or alternatively by using the `Testing` tab in VSCode which should discover the tests in our repo.
 
@@ -70,6 +99,8 @@ The tests can either be ran by executing the command `python -m pytest`, or alte
 # Relevant documents
 
 Please see our [Google Doc](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit?usp=sharing) for all the documentation and planning we did for our project.
+
+Here's a link to our [Schedule & Planning](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=kix.1vzl6m8472li)
 
 Here are our [Presentation Slides](https://docs.google.com/presentation/d/19lBsd1kV9K8-WTmjm7iKl9PKMK03tVnVeWeO9uBxy9o/edit?usp=sharing) as well
 
@@ -249,42 +280,70 @@ Our UI also displays some key statistics such as
 
 # User Studies
 
-# Future Work
-Here is the result of final user study
+For our final user study, we used several examples from our [example_inputs](./example_inputs/) directory, generated the HTML report, and got users to try out some example inputs themselves. We also showed them an output with no dead code, and tried asking them to generate some dead code as well.
+
+For our first user study, we used this example [FirstUserStudy](./FirstUserStudyRedo.md)
+
+## Notes from final user study
+
+Overall, uses were quite happy with our program analysis, commenting about how they didn't know what dead code is, and how the CLI & UI were intuitive and easy to use. They enjoyed our practical example with tracing/logging/metrics, and wanted to experiment with more complex programs.
+
+Some of the main feedback we got was:
+
 - Users suggesting being able to do analysis across different files
   - Figure out the code that calls the function in different files. This makes the dependency complex.
-- Users suggested more complex control flow mechanisms in Python such as
-   - For else
-    - 
-    ```
-    for item in container:
-        if search_something(item):
-            # Found it!
-            process(item)
-            break
-        else:
-            # Didn't find anything..
-            not_found_in_container()
-    ```
-  - While else
-  - Assignment expressions in while loops
-    - 
+- Some of our more experienced Python developers suggested more complex control flow mechanisms such as
+   - Else statements in for loops and while loops
+      ```
+      for item in container:
+         if search_something(item):
+               # Found it!
+               process(item)
+               break
+         else:
+               # Didn't find anything..
+               not_found_in_container()
+      ```
+  - Assignment expressions in while loops and if statements
     ```
     while line := data.readline(): 
         do_smthg(line)
     ```
   - Note: Python has plenty of special syntaxes that do not appear in other languages.
 
-- Users suggested that it might be easier to use as a built-in editor extension instead of a command line. Running the program with a file path for every dead code detection will be tiresome.
+- Users suggested that it might be easier to use as a built-in editor extension instead of a command line. Running our analysis each time through a CLI for every file the user desires could be cumbersome for the user.
 - Users suggested they want to see some dead code that is unreachable for any inputs.
-- Users wondered if it’s possible to differentiate to analyze function calls by passing by reference and by value.
+  - Our thoughts: Yes, we agree. Right now our definition of dead code doesn't include unreachable code. Thus, we could extend this idea for the future.
+- Users also wondered if it’s possible to differentiate to analyze function calls by passing by reference and by value.
   - Current design chose to assume all arguments in function call depending on that line.
+  - We'd also have to think about aliasing and global variables.
 - Users wondered if this project support the file consisting of class definition.
   - Class method would include the code to modify the class variables but it does not return anything. In our current implementation, such code will be related to the effective variables so that it might be removed from our slicing algorithm.
-- Overall, users found the dead code removal helpful to not only understand what the code is doing, but also how to clean up any dead code that isn’t needed. They even started experimenting with different programs themselves.
 
+Full details can be found [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.tzsjpiajuvw0)
 
-Based on the above user study, our future work mainly includes,
+## Notes from first user study
+
+Some of the main feedback we got was:
+
+- Users were a bit confused by what the definition of dead code was
+  - We clarified afterwards that it’s not limited to unreachable code, but code that doesn’t affect the core logic of the program
+- Outputting the number of lines removed was not that helpful. Users had some difficulty seeing which lines got removed. They suggested an inline or side-by-side diff view with highlighting, sort of like a git diff
+- Users felt that specifying the effective variables was a little redundant, which meant that they had to understand the code to a certain extent to know which variables are important
+  - Solution: we could find the effective variables by scanning across functions and finding their return statements. This could suggest to the user which variables are potentially more important and impactful
+- Users felt a bit lost at times about why certain code was removed
+  - They also said it might be because it was hard to see without some diff view as mentioned earlier
+  - Our idea
+    - We could show them the individual program slices for each effective variable
+    - For each individual program slice, we can show which lines the variable depends on
+- Users were wondering if we could support dead code removal across several functions at once
+  - We’ll have to explore how to support program slicing across functions
+
+Full details can be found [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.9vxmjono8y9o)
+
+# Future Work
+
+Based on our final user study results and our own analysis, our future work mainly includes:
 - User Experience
   - On-the-fly analysis
   - VS Code built-in extension
@@ -296,7 +355,6 @@ Based on the above user study, our future work mainly includes,
 - Analysis Optimizations
   - More advanced algorithms for finding effective variables
   - Less pessimistic assumptions for variable dependencies
-
 
 # References
 1. https://www.cs.wm.edu/~denys/pubs/TSE'18-DeadCode.pdf?fbclid=IwAR38JynyhFk7aWL51v6mqAlH8E-pHnHIgFSOQxpHMRuUkzOXTsBSdbq1uX4

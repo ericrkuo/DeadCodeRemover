@@ -314,7 +314,7 @@ Some of the main feedback we got was:
     while line := data.readline(): 
         do_smthg(line)
     ```
-  - Note: Python has plenty of special syntaxes that do not appear in other languages.
+  - Note: Python has plenty of special syntaxes that do not appear in other languages. We definitely agree with this point, and were quite surprised these behaviors were allowed in Python. Our group immediately began implementing this feedback, but due to higher priority items such as the video and presentation, we decided to act on this in the future.
 
 - Users suggested that it might be easier to use as a built-in editor extension instead of a command line. Running our analysis each time through a CLI for every file the user desires could be cumbersome for the user.
 - Users suggested they want to see some dead code that is unreachable for any inputs.
@@ -334,6 +334,7 @@ Some of the main feedback we got was:
 - Users were a bit confused by what the definition of dead code was
   - We clarified afterwards that it’s not limited to unreachable code, but code that doesn’t affect the core logic of the program
 - Outputting the number of lines removed was not that helpful. Users had some difficulty seeing which lines got removed. They suggested an inline or side-by-side diff view with highlighting, sort of like a git diff
+  - Our thoughts: we perfectly agree, if there's some highlighting or side by side view, it would make our analysis easier to understand and learn.
 - Users felt that specifying the effective variables was a little redundant, which meant that they had to understand the code to a certain extent to know which variables are important
   - Solution: we could find the effective variables by scanning across functions and finding their return statements. This could suggest to the user which variables are potentially more important and impactful
 - Users felt a bit lost at times about why certain code was removed

@@ -19,6 +19,8 @@ We've started creating a rough [outline](https://docs.google.com/document/d/1rTH
 
 We'll be completing our final user study this weekend. We're almost done preparing the examples we'll be showing our users, and will report our progress here shortly.
 
+Edit 11/29/22: Our final user study results can be found in our README [here](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12#user-studies) 
+
 ## Planned timeline for the remaining days and progress against timeline
 
 Please see [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=kix.1vzl6m8472li) for our remaining work items.
@@ -78,7 +80,7 @@ Full details can be found at [Milestone 3](https://docs.google.com/document/d/1r
 Since we changed our project idea, we'll be redoing our first user study for Milestone 3. Please see the archive below and our google doc for all the work we did in our previous Milestone 3
 
 ## First User Study Results
-Note: full results can be found [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.9vxmjono8y9o)
+Note: full results can be found [here](https://github.students.cs.ubc.ca/CPSC410-2022W-T1/Project2Group12#user-studies)
 
 We created a series of example inputs and outputs to show to our users. It can be found at [FirstUserStudyRedo.md](FirstUserStudyRedo.md)
 

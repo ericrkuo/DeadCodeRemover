@@ -1,6 +1,11 @@
-# Dead Code Remover
+# Project 2 Group12
 
-This is a static program analysis for Python that removes dead code using program slicing.
+The main components of this README include an overview of our project, how to run it, the architecture/design of our project, some tradeoffs of our static analysis, and much more!
+
+# Disclaimer
+Our group changed our idea midway during Milestone 4. We sent an email to Alex and received approval to change our project idea. We redid Milestones 2 and 3 in [MILESTONES.md](./MILESTONES.md), but kept an archive at the very bottom of the file to show that we put significant effort in our previous ideas and that we submitted previous milestones on time. Please contact our group if there's any questions!
+
+# Introduction, Use Case & Motivation
 
 ## Definition of dead code
 
@@ -277,6 +282,70 @@ Our UI also displays some key statistics such as
 ### Drill Down View
 
 Our UI also displays the individual program slices for each effective variable. This is important to the programmer in case they want finer grained details on why some dependencies exist between variables.
+
+# User Studies
+
+For our final user study, we used several examples from our [example_inputs](./example_inputs/) directory, generated the HTML report, and got users to try out some example inputs themselves. We also showed them an output with no dead code, and tried asking them to generate some dead code as well.
+
+For our first user study, we used this example [FirstUserStudy](./FirstUserStudyRedo.md)
+
+## Notes from final user study
+
+Overall, uses were quite happy with our program analysis, commenting about how they didn't know what dead code is, and how the CLI & UI were intuitive and easy to use. They enjoyed our practical example with tracing/logging/metrics, and wanted to experiment with more complex programs.
+
+Some of the main feedback we got was:
+
+- Users suggesting being able to do analysis across different files
+  - Figure out the code that calls the function in different files. This makes the dependency complex.
+- Some of our more experienced Python developers suggested more complex control flow mechanisms such as
+   - Else statements in for loops and while loops
+      ```
+      for item in container:
+         if search_something(item):
+               # Found it!
+               process(item)
+               break
+         else:
+               # Didn't find anything..
+               not_found_in_container()
+      ```
+  - Assignment expressions in while loops and if statements
+    ```
+    while line := data.readline(): 
+        do_smthg(line)
+    ```
+  - Note: Python has plenty of special syntaxes that do not appear in other languages. We definitely agree with this point, and were quite surprised these behaviors were allowed in Python. Our group immediately began implementing this feedback, but due to higher priority items such as the video and presentation, we decided to act on this in the future.
+
+- Users suggested that it might be easier to use as a built-in editor extension instead of a command line. Running our analysis each time through a CLI for every file the user desires could be cumbersome for the user.
+- Users suggested they want to see some dead code that is unreachable for any inputs.
+  - Our thoughts: Yes, we agree. Right now our definition of dead code doesn't include unreachable code. Thus, we could extend this idea for the future.
+- Users also wondered if it’s possible to differentiate parameters passed into function calls either by reference or by value.
+  - Our current design chose to assume all arguments in function call depending on that line. But this was too pessimistic, so we acted on this feedback and only considered function calls for functions defined by the user.
+  - We'd also have to think about aliasing and global variables.
+- Users wondered if our project supports class definitions
+  - Our thoughts: Class methods would include the code to modify the class variables but it does not return anything. In our current implementation, such code will be related to the effective variables so that it might be removed from our slicing algorithm.
+
+Full details can be found [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.tzsjpiajuvw0)
+
+## Notes from first user study
+
+Some of the main feedback we got was:
+
+- Users were a bit confused by what the definition of dead code was
+  - We clarified afterwards that it’s not limited to unreachable code, but code that doesn’t affect the core logic of the program
+- Outputting the number of lines removed was not that helpful. Users had some difficulty seeing which lines got removed. They suggested an inline or side-by-side diff view with highlighting, sort of like a git diff
+  - Our thoughts: we perfectly agree, if there's some highlighting or side by side view, it would make our analysis easier to understand and learn.
+- Users felt that specifying the effective variables was a little redundant, which meant that they had to understand the code to a certain extent to know which variables are important
+  - Solution: we could find the effective variables by scanning across functions and finding their return statements. This could suggest to the user which variables are potentially more important and impactful
+- Users felt a bit lost at times about why certain code was removed
+  - They also said it might be because it was hard to see without some diff view as mentioned earlier
+  - Our idea
+    - We could show them the individual program slices for each effective variable
+    - For each individual program slice, we can show which lines the variable depends on
+- Users were wondering if we could support dead code removal across several functions at once
+  - We’ll have to explore how to support program slicing across functions
+
+Full details can be found [here](https://docs.google.com/document/d/1rTH12Da8VUmN5pwcnyu2vJ35sXW-D8ipX03xwb-4nak/edit#bookmark=id.9vxmjono8y9o)
 
 # Future Work
 
